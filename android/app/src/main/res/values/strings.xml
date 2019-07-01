@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">MHD Virtual Table</string>
+    <string name="all">All stops</string>
+    <string name="actual">Actual</string>
+    <string name="near">Nearby</string>
+    <string name="favourites">Favourites</string>
+    <string name="search_hint">Search…</string>
+</resources>

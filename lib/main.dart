@@ -29,7 +29,7 @@ class MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'MHD Virtual Table',
       theme: ThemeData(
-        primaryColor: Colors.black,
+        primarySwatch: Colors.red,
       ),
       home: Scaffold(
         appBar: PreferredSize(

@@ -4,5 +4,7 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"dart.flutterSdkPath": "C:\\Users\\magic_sk\\Downloads\\Programs\\Flutter_projects\\flutter"
+	}
 }
