@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -76,7 +76,7 @@ class StopWebView extends StatelessWidget {
         preferredSize: Size.fromHeight(0.0),
         child: AppBar(),
       ),
-      body: WebviewScaffold(url: stop.url),
+      body: WebView(initialUrl: stop.url,javascriptMode: JavascriptMode.unrestricted),
     );
   }
 }
