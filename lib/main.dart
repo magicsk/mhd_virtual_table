@@ -29,12 +29,9 @@ class MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'MHD Virtual Table',
       theme: ThemeData(
-        primarySwatch: Colors.red,
+        primaryColor: Colors.black,
       ),
       home: Scaffold(
-        appBar: PreferredSize(
-            preferredSize: Size.fromHeight(0.0), child: AppBar(),
-          ),
         body: _pageOptions[_selectedPage],
         bottomNavigationBar: BottomNavigationBar(
           // type: BottomNavigationBarType.shifting,

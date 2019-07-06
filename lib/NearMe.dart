@@ -1,33 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'widgets/webview.dart';
 
 class NearMePage extends StatefulWidget {
   @override
   _NearMeState createState() => _NearMeState();
 }
 
-class Stop {
+class NearStop {
   final String name;
   final String url;
-  Stop(this.name, this.url);
+  NearStop(this.name, this.url);
 }
+
 Geolocator geolocator = Geolocator();
 Position userLocation;
 
 class _NearMeState extends State<NearMePage> {
-  final stops = new List<Stop>();
+  final stops = new List<NearStop>();
   var _isLoading = true;
 
-   @override
+  @override
   void initState() {
     super.initState();
-    _fetchStops();
+    _fetchNearStops();
   }
 
-  _fetchStops() async {
+  _fetchNearStops() async {
     var currentLocation;
     try {
       currentLocation = await geolocator.getCurrentPosition(
@@ -35,12 +37,15 @@ class _NearMeState extends State<NearMePage> {
     } catch (e) {
       currentLocation = null;
     }
-    final urlString = 'https://api.magicsk.eu/nearme?lat='+ currentLocation.latitude.toString() +'&long=' + currentLocation.longitude.toString();
+    final urlString = 'https://api.magicsk.eu/nearme?lat=' +
+        currentLocation.latitude.toString() +
+        '&long=' +
+        currentLocation.longitude.toString();
     print("Fetching: " + urlString);
     final response = await http.get(urlString);
     final stopsJson = json.decode(utf8.decode(response.bodyBytes));
     stopsJson.forEach((stopJson) {
-      final stop = new Stop(stopJson["name"], stopJson["url"]);
+      final stop = new NearStop(stopJson["name"], stopJson["url"]);
       stops.add(stop);
     });
     setState(() {
@@ -51,11 +56,13 @@ class _NearMeState extends State<NearMePage> {
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
+      appBar: PreferredSize(
+          preferredSize: Size.fromHeight(0.0),
+          child: AppBar()),
       body: new Center(
           child: _isLoading
               ? new CircularProgressIndicator()
               : new Scrollbar(
-
                   child: ListView.builder(
                   scrollDirection: Axis.vertical,
                   itemCount: stops.length,
@@ -63,12 +70,12 @@ class _NearMeState extends State<NearMePage> {
                     final stop = stops[i];
                     return new FlatButton(
                       padding: new EdgeInsets.all(0.0),
-                      child: StopRow(stop),
+                      child: NearStopRow(stop),
                       onPressed: () {
                         Navigator.push(
                             context,
                             new MaterialPageRoute(
-                                builder: (context) => new StopWebView(stop)));
+                                builder: (context) => new NearStopWebView(stop)));
                       },
                     );
                   },
@@ -77,23 +84,9 @@ class _NearMeState extends State<NearMePage> {
   }
 }
 
-class StopWebView extends StatelessWidget {
-  final Stop stop;
-  StopWebView(this.stop);
-  Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(0.0),
-        child: AppBar(),
-      ),
-      body: WebView(initialUrl: stop.url,javascriptMode: JavascriptMode.unrestricted),
-    );
-  }
-}
-
-class StopRow extends StatelessWidget {
-  final Stop stop;
-  StopRow(this.stop);
+class NearStopRow extends StatelessWidget {
+  final NearStop stop;
+  NearStopRow(this.stop);
   Widget build(BuildContext context) {
     return new Column(
       children: <Widget>[
@@ -123,4 +116,3 @@ class StopRow extends StatelessWidget {
     );
   }
 }
-

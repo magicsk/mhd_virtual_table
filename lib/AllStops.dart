@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'widgets/webview.dart';
 
 class AllStopsPage extends StatefulWidget {
   @override
@@ -56,63 +57,91 @@ class _AllStopsState extends State<AllStopsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar:AppBar(
+            title: Center(child: Text('Stops'),),
+            backgroundColor: Color(0xFFe90007),
+            bottom: PreferredSize(
+              preferredSize: Size.fromHeight(60.0),
+              child: _searchBar(),
+           ),
+          ),
       body: Center(
           child: _isLoading
               ? CircularProgressIndicator()
               : Scrollbar(
                   child: ListView.builder(
                   scrollDirection: Axis.vertical,
-                  itemCount: _stopsForDisplay.length + 1,
+                  itemCount: _stopsForDisplay.length,
                   itemBuilder: (context, index) {
-                    return index == 0 ? _searchBar() : _listItem(index - 1);
+                    return _listItem(index);
                   },
                 ))),
     );
   }
 
   _searchBar() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: TextField(
-        decoration: InputDecoration(hintText: 'Search...'),
-        autofocus: true,
-        maxLines: 1,
-        style: TextStyle(fontSize: 18.0),
-        onChanged: (text) {
-          text = removeDiacritics(text).toLowerCase();
-          setState(() {
-            _stopsForDisplay = _stops.where((stop) {
-              var stopName = removeDiacritics(stop.name).toLowerCase();
-              return stopName.contains(text);
-            }).toList();
-          });
-        },
-      ),
-    );
+    return
+        Padding(
+          padding: const EdgeInsets.only(bottom: 20.0,left: 15.0,right: 15.0),
+          child: TextField(
+            decoration: InputDecoration(
+                hintText: 'Search...',
+                contentPadding:
+                    EdgeInsets.only(top: 8.0, bottom: 8.0, left: 16.0),
+                hintStyle: TextStyle(color: Colors.white70),
+                enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white, width: 2.0)),
+                focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Colors.white, width: 2.5))),
+            autofocus: false,
+            cursorColor: Colors.white,
+            maxLines: 1,
+            style: TextStyle(fontSize: 20.0, color: Colors.white),
+            onChanged: (text) {
+              text = removeDiacritics(text).toLowerCase();
+              setState(() {
+                _stopsForDisplay = _stops.where((stop) {
+                  var stopName = removeDiacritics(stop.name).toLowerCase();
+                  return stopName.contains(text);
+                }).toList();
+              });
+            },
+          ),
+        );
   }
 
   _listItem(index) {
-    return Column(
-      children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return FlatButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              new MaterialPageRoute(
+                  builder: (context) =>
+                      new StopWebView(_stopsForDisplay[index])));
+        },
+        child: Column(
           children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Padding(
-                 padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 26.0, right: 16.0),
-                  child: Text(
-                    _stopsForDisplay[index].name,
-                    style: TextStyle(
-                        fontSize: 18.0, fontWeight: FontWeight.normal),
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 4.0, bottom: 4.0, left: 12.0, right: 16.0),
+                      child: Text(
+                        _stopsForDisplay[index].name,
+                        style: TextStyle(
+                            fontSize: 18.0, fontWeight: FontWeight.normal),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 16.0, right: 12.0),
-              child: Padding(
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 4.0, bottom: 4.0, left: 16.0, right: 0.0),
+                  child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Icon(
                       Icons.star_border,
@@ -120,29 +149,14 @@ class _AllStopsState extends State<AllStopsPage> {
                       color: Colors.grey,
                     ),
                   ),
+                ),
+              ],
             ),
+            Divider(
+              height: 2.0,
+              color: Colors.grey,
+            )
           ],
-        ),
-        Divider(
-          height: 2.0,
-          color: Colors.grey,
-        )
-      ],
-    );
-  }
-}
-
-class StopWebView extends StatelessWidget {
-  final Stop stop;
-  StopWebView(this.stop);
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(0.0),
-        child: AppBar(),
-      ),
-      body: WebView(
-          initialUrl: stop.url, javascriptMode: JavascriptMode.unrestricted),
-    );
+        ));
   }
 }
