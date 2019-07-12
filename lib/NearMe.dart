@@ -1,35 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 
 import 'widgets/webview.dart';
+import 'widgets/stopList.dart';
 
 class NearMePage extends StatefulWidget {
   @override
   _NearMeState createState() => _NearMeState();
 }
 
-class NearStop {
-  final String name;
-  final String url;
-  NearStop(this.name, this.url);
-}
-
-Geolocator geolocator = Geolocator();
-Position userLocation;
-
 class _NearMeState extends State<NearMePage> {
-  final stops = new List<NearStop>();
-  var _isLoading = true;
+  List<Stop> nearStops = List<Stop>();
+  Geolocator geolocator = Geolocator();
+  Position userLocation;
+  File nearStopsFile;
+  String nearStopsFileName = 'nearStops.json';
+  bool nearStopsExists = false;
+  bool _isLoadingNew = true;
+  bool _isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _fetchNearStops();
-  }
-
-  _fetchNearStops() async {
+  Future<List<Stop>> fetchNearStops() async {
     var currentLocation;
     try {
       currentLocation = await geolocator.getCurrentPosition(
@@ -37,45 +31,139 @@ class _NearMeState extends State<NearMePage> {
     } catch (e) {
       currentLocation = null;
     }
-    final urlString = 'https://api.magicsk.eu/nearme?lat=' +
+    var url = 'https://api.magicsk.eu/nearme?lat=' +
         currentLocation.latitude.toString() +
         '&long=' +
         currentLocation.longitude.toString();
-    print("Fetching: " + urlString);
-    final response = await http.get(urlString);
-    final stopsJson = json.decode(utf8.decode(response.bodyBytes));
-    stopsJson.forEach((stopJson) {
-      final stop = new NearStop(stopJson["name"], stopJson["url"]);
-      stops.add(stop);
+    var response = await http.get(url);
+
+    var _nearStops = List<Stop>();
+    print("Fetching: " + url);
+    if (response.statusCode == 200) {
+      var nearStopsJson = json.decode(utf8.decode(response.bodyBytes));
+      for (var nearStopJson in nearStopsJson) {
+        _nearStops.add(Stop.fromJson(nearStopJson));
+      }
+    }
+    return _nearStops;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getApplicationDocumentsDirectory().then((Directory directory) {
+      nearStopsFile = new File(directory.path + '/' + nearStopsFileName);
+      nearStopsExists = nearStopsFile.existsSync();
+      if (nearStopsExists) {
+        print('nearStops.json exists');
+        var _nearStopsFile = List<Stop>();
+        var nearStopsFileJson = json.decode((nearStopsFile.readAsStringSync()));
+        for (var nearStopFileJson in nearStopsFileJson) {
+          _nearStopsFile.add(Stop.fromJson(nearStopFileJson));
+        }
+        nearStops.clear();
+        nearStops.addAll(_nearStopsFile);
+        print('nearStops loaded');
+        setState(() {
+          _isLoading = false;
+        });
+      }
     });
-    setState(() {
-      _isLoading = false;
+    fetchNearStops().then((value) {
+      setState(() {
+        nearStops.clear();
+        nearStops.addAll(value);
+        _isLoadingNew = false;
+        getApplicationDocumentsDirectory().then((Directory directory) {
+          File file = new File(directory.path + "/" + nearStopsFileName);
+          file.createSync();
+          file.writeAsStringSync(json.encode(nearStops));
+          print('nearStops saved');
+        });
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(0.0),
-          child: AppBar()),
-      body: new Center(
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text('Stops nearby'),
+        actions: <Widget>[
+          _isLoadingNew
+              ? Padding(
+                  padding:
+                      EdgeInsets.only(top: 21.0, bottom: 19.0, right: 15.0),
+                  child: SizedBox(
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.0,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                    width: 15.0,
+                  ))
+              : IconButton(
+                  icon: Icon(Icons.refresh),
+                  color: Colors.white,
+                  onPressed: () async {
+                    setState(() {
+                     _isLoadingNew = true; 
+                    });
+                    var currentLocation;
+                    try {
+                      currentLocation = await geolocator.getCurrentPosition(
+                          desiredAccuracy: LocationAccuracy.best);
+                    } catch (e) {
+                      currentLocation = null;
+                    }
+                    var url = 'https://api.magicsk.eu/nearme?lat=' +
+                        currentLocation.latitude.toString() +
+                        '&long=' +
+                        currentLocation.longitude.toString();
+                    var response = await http.get(url);
+
+                    var _nearStops = List<Stop>();
+                    print("Fetching: " + url);
+                    if (response.statusCode == 200) {
+                      var nearStopsJson =
+                          json.decode(utf8.decode(response.bodyBytes));
+                      for (var nearStopJson in nearStopsJson) {
+                        _nearStops.add(Stop.fromJson(nearStopJson));
+                      }
+                    }
+                    setState(() {
+                      nearStops.clear();
+                      nearStops.addAll(_nearStops);
+                      _isLoadingNew = false;
+                      getApplicationDocumentsDirectory()
+                          .then((Directory directory) {
+                        File file =
+                            new File(directory.path + "/" + nearStopsFileName);
+                        file.createSync();
+                        file.writeAsStringSync(json.encode(nearStops));
+                        print('nearStops saved');
+                      });
+                    });
+                  })
+        ],
+        backgroundColor: Color(0xFFe90007),
+      ),
+      body: Center(
           child: _isLoading
-              ? new CircularProgressIndicator()
-              : new Scrollbar(
+              ? Scaffold()
+              : Scrollbar(
                   child: ListView.builder(
                   scrollDirection: Axis.vertical,
-                  itemCount: stops.length,
-                  itemBuilder: (context, i) {
-                    final stop = stops[i];
+                  itemCount: nearStops.length,
+                  itemBuilder: (context, index) {
                     return new FlatButton(
-                      padding: new EdgeInsets.all(0.0),
-                      child: NearStopRow(stop),
+                      child: NearStopRow(nearStops[index]),
                       onPressed: () {
                         Navigator.push(
                             context,
                             new MaterialPageRoute(
-                                builder: (context) => new NearStopWebView(stop)));
+                                builder: (context) =>
+                                    new StopWebView(nearStops[index])));
                       },
                     );
                   },
@@ -85,32 +173,33 @@ class _NearMeState extends State<NearMePage> {
 }
 
 class NearStopRow extends StatelessWidget {
-  final NearStop stop;
+  final Stop stop;
   NearStopRow(this.stop);
   Widget build(BuildContext context) {
-    return new Column(
+    return Column(
       children: <Widget>[
-        new Container(
-          padding: new EdgeInsets.all(14.0),
-          child: new Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              new Flexible(
-                child: new Column(
-                  children: <Widget>[
-                    new Text(
-                      stop.name,
-                      style: new TextStyle(
-                          fontSize: 18.0, fontWeight: FontWeight.normal),
-                    )
-                  ],
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: <Widget>[
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(
+                      top: 16.0, bottom: 16.0, left: 16.0),
+                  child: Text(
+                    stop.name,
+                    style: TextStyle(
+                        fontSize: 17.5, fontWeight: FontWeight.normal),
+                  ),
                 ),
-              )
-            ],
-          ),
+              ],
+            ),
+          ],
         ),
-        new Divider(
-          height: 1.0,
+        Divider(
+          height: 2.0,
+          color: Colors.grey,
         )
       ],
     );

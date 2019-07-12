@@ -1,16 +1,23 @@
-# mhd_virtual_table
+# MHD Virtual Table
 
-A new Flutter project.
+App with list of virtual tables for MHD in Bratislava.
 
-## Getting Started
+## TODO
 
-This project is a starting point for a Flutter application.
+Add nearme 
+- cache ✔
+- speed (some way :D) ✔
+- on changed position (maybe) ✘ -> used button refresh ✔
 
-A few resources to get you started if this is your first Flutter project:
+Better permission check
+- if denied alert
+- cut nearme and actual availability
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
+Offline mode
+- load cached stops & nearme
+- alert
 
-For help getting started with Flutter, view our 
-[online documentation](https://flutter.dev/docs), which offers tutorials, 
-samples, guidance on mobile development, and a full API reference.
+Add settings
+Add dark mode
+Add sk locatization
+Add some animations
