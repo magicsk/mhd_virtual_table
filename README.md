@@ -10,12 +10,12 @@ Add nearme
 - on changed position (maybe) ✘ -> used button refresh ✔
 
 Better permission check
-- if denied alert
-- cut nearme and actual availability
+- if denied alert ✔
+- cut nearme ✔ and actual availability
 
 Offline mode
-- load cached stops & nearme
-- alert
+- load cached stops & nearme ✔
+- alert ✔
 
 Add settings
 Add dark mode
