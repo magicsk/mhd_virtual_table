@@ -17,7 +17,8 @@ Offline mode
 - load cached stops & nearme ✔
 - alert ✔
 
-Add settings
-Add dark mode
-Add sk locatization
-Add some animations
+Final tuches
+- add settings
+- add dark mode
+- add sk locatization
+- add some animations
