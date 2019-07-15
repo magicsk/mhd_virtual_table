@@ -17,18 +17,3 @@ class StopWebView extends StatelessWidget {
     );
   }
 }
-
-// class NearStopWebView extends StatelessWidget {
-//   final NearStop stop;
-//   NearStopWebView(this.stop);
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: PreferredSize(
-//         preferredSize: Size.fromHeight(0.0),
-//         child: AppBar(backgroundColor: Colors.black),
-//       ),
-//       body: WebView(
-//           initialUrl: stop.url, javascriptMode: JavascriptMode.unrestricted),
-//     );
-//   }
-// }

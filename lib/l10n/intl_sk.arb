@@ -1,0 +1,141 @@
+{
+  "@@last_modified": "2019-07-15T18:37:53.584430",
+  "cancel": "Zrušiť",
+  "@cancel": {
+    "description": "Cancel alert button",
+    "type": "text",
+    "placeholders": {}
+  },
+  "offlineDesc": "Internetové pripojenie nebolo nájdené, aplikácia nebude fungovať správne.",
+  "@offlineDesc": {
+    "description": "Offline alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "attention": "Pozor!",
+  "@attention": {
+    "description": "Attention alert",
+    "type": "text",
+    "placeholders": {}
+  },
+  "attentionDesc": "Prístup k polohe je obmedzený operačným systémom, niektoré funkcie nemusia fungovať.",
+  "@attentionDesc": {
+    "description": "Attention alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "unknown": "Prístup neznámy!",
+  "@unknown": {
+    "description": "Unknown alert",
+    "type": "text",
+    "placeholders": {}
+  },
+  "unknownDesc": "Prístup k polohe je neznámy. Chceš povolit prístup k polohe(GPS musí byť zapnutá v nastaveniach)? Inak tvoja poloha nebude použitá!",
+  "@unknownDesc": {
+    "description": "Unknown alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "denied": "Prístup zmietnutý!",
+  "@denied": {
+    "description": "Denied alert",
+    "type": "text",
+    "placeholders": {}
+  },
+  "deniedDesc": "Prístup k polohe bol zamietnutý. Chceš otvoriť nastavenia? Ak nie tak niektoré funkcie nemusia fungovať!",
+  "@deniedDesc": {
+    "description": "Denied alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "nearMeNav": "Najbližšie",
+  "@nearMeNav": {
+    "description": "Bottom Navigation Bar Near me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "actualNav": "Aktuálna",
+  "@actualNav": {
+    "description": "Bottom Navigation Bar Actual",
+    "type": "text",
+    "placeholders": {}
+  },
+  "allstopsNav": "Všetky",
+  "@allstopsNav": {
+    "description": "Bottom Navigation Bar All stops",
+    "type": "text",
+    "placeholders": {}
+  },
+  "nearMeTitle": "Najbližšie zastávky",
+  "@nearMeTitle": {
+    "description": "Title Near me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "allstopsTitle": "Všetky zastávky",
+  "@allstopsTitle": {
+    "description": "Title All stops",
+    "type": "text",
+    "placeholders": {}
+  },
+  "settingsTitle": "Nastavenia",
+  "@settingsTitle": {
+    "description": "Settings Title",
+    "type": "text",
+    "placeholders": {}
+  },
+  "restrictedNearMe": "Prístup k polohe je obmedzený operačným systémom!",
+  "@restrictedNearMe": {
+    "description": "Restricted Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "offLocationNearMe": "Zisťovanie polohy GPS je vypnuté!",
+  "@offLocationNearMe": {
+    "description": "Location off Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "wrongNearMe": "Ops... niečo sa stalo zle!",
+  "@wrongNearMe": {
+    "description": "Wrong Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "locationDeniedNearMe": "Prístup k polohe bol zamietnutý!",
+  "@locationDeniedNearMe": {
+    "description": "Location Denied Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "noConnectionNearMe": "Žiadne internetové pripojenie!",
+  "@noConnectionNearMe": {
+    "description": "No Connection Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "retryBtn": "Skúsiť znova",
+  "@retryBtn": {
+    "description": "Retry button",
+    "type": "text",
+    "placeholders": {}
+  },
+  "searchHint": "Vyhladávanie...",
+  "@searchHint": {
+    "description": "Search Hint",
+    "type": "text",
+    "placeholders": {}
+  },
+  "darkTheme": "Tmavá téma",
+  "@darkTheme": {
+    "description": "Dark theme option",
+    "type": "text",
+    "placeholders": {}
+  },
+  "blackTheme": "Čierna téma",
+  "@blackTheme": {
+    "description": "Dark theme option",
+    "type": "text",
+    "placeholders": {}
+  }
+}

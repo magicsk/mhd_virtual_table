@@ -1,6 +1,6 @@
 name: mhd_virtual_table
 description: App with list of virtual tables for MHD in Bratislava.
-version: 0.8.2
+version: 0.8.3
 authors: 
 - magicsk.eu <support@magicsk.eu>
 
@@ -10,6 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.15.1
   flutter_webview_plugin: ^0.3.5
   webview_flutter: ^0.3.9+1
   permission_handler: '^3.1.0'
@@ -20,13 +23,17 @@ dependencies:
   path_provider: ^1.1.2
   easy_alert: ^0.0.2
   connectivity: ^0.4.2
+  dynamic_theme: ^1.0.1
+  shared_preferences: ^0.5.3+2
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^0.1.2
+  flutter_cupertino_localizations: ^1.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  intl_translation: ^0.17.5
 
 
 # For information on the generic Dart part of this file, see the

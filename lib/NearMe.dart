@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
@@ -9,6 +10,7 @@ import 'dart:io';
 
 import 'widgets/webview.dart';
 import 'widgets/stopList.dart';
+import 'locale/locales.dart';
 
 class NearMePage extends StatefulWidget {
   @override
@@ -28,6 +30,15 @@ class _NearMeState extends State<NearMePage> {
   bool _locationStatus = false;
   bool _networkStatus = false;
   bool _restricted = false;
+
+  _getprefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _gotPermission = prefs.getBool('_gotPermission');
+      print(_gotPermission);
+    });
+    return _gotPermission;
+  }
 
   _checkNetworkStatus() async {
     await (Connectivity().checkConnectivity()).then((status) {
@@ -51,29 +62,6 @@ class _NearMeState extends State<NearMePage> {
       }
     });
     return _locationStatus;
-  }
-
-  _checkPermisson() async {
-    await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.locationWhenInUse)
-        .then((status) {
-      if (status == PermissionStatus.granted) {
-        _gotPermission = true;
-      } else if (status == PermissionStatus.restricted) {
-        setState(() {
-          _gotPermission = false;
-          _restricted = true;
-        });
-        print('restricted');
-      } else if (status == PermissionStatus.unknown) {
-        _gotPermission = true;
-      } else if (status == PermissionStatus.disabled) {
-        _gotPermission = true;
-      } else {
-        _gotPermission = false;
-      }
-    });
-    return _gotPermission;
   }
 
   Future<List<Stop>> fetchNearStops() async {
@@ -103,7 +91,6 @@ class _NearMeState extends State<NearMePage> {
 
   @override
   void initState() {
-    super.initState();
     _checkNetworkStatus().then((status) {
       if (status) {
         getApplicationDocumentsDirectory().then((Directory directory) {
@@ -130,7 +117,7 @@ class _NearMeState extends State<NearMePage> {
             _locationStatus = status;
           });
           if (status) {
-            _checkPermisson().then((permission) {
+            _getprefs().then((permission) {
               setState(() {
                 _gotPermission = permission;
               });
@@ -158,11 +145,6 @@ class _NearMeState extends State<NearMePage> {
               }
             });
           } else {
-            _checkPermisson().then((permission) {
-              setState(() {
-                _gotPermission = permission;
-              });
-            });
             setState(() {
               _isLoadingNew = false;
               _locationStatus = false;
@@ -175,18 +157,14 @@ class _NearMeState extends State<NearMePage> {
           _networkStatus = status;
           _isLoading = true;
         });
-        _checkPermisson().then((permission) {
-          setState(() {
-            _gotPermission = permission;
-          });
-        });       
-         _checkLocationStatus().then((status) {
+        _checkLocationStatus().then((status) {
           setState(() {
             _locationStatus = status;
           });
         });
       }
     });
+    super.initState();
   }
 
   @override
@@ -194,7 +172,7 @@ class _NearMeState extends State<NearMePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Nearest stops'),
+        title: Text(AppLocalizations.of(context).nearMeTitle),
         actions: _networkStatus
             ? <Widget>[
                 _isLoadingNew
@@ -260,126 +238,137 @@ class _NearMeState extends State<NearMePage> {
                             : null)
               ]
             : null,
-        backgroundColor: Color(0xFFe90007),
       ),
-      body: _networkStatus
-          ? Center(
-              child: _isLoading
-                  ? Center()
-                  : _locationStatus
-                      ? Scrollbar(
-                          child: ListView.builder(
-                            scrollDirection: Axis.vertical,
-                            itemCount: nearStops.length,
-                            itemBuilder: (context, index) {
-                              return new FlatButton(
-                                child: NearStopRow(nearStops[index]),
-                                onPressed: () {
-                                  Navigator.push(
-                                      context,
-                                      new MaterialPageRoute(
-                                          builder: (context) => new StopWebView(
-                                              nearStops[index])));
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _networkStatus
+              ? Center(
+                  child: _isLoading
+                      ? Center()
+                      : _locationStatus
+                          ? Scrollbar(
+                              child: ListView.builder(
+                                scrollDirection: Axis.vertical,
+                                itemCount: nearStops.length,
+                                itemBuilder: (context, index) {
+                                  return new FlatButton(
+                                    child: NearStopRow(nearStops[index]),
+                                    onPressed: () {
+                                      Navigator.push(
+                                          context,
+                                          new MaterialPageRoute(
+                                              builder: (context) =>
+                                                  new StopWebView(
+                                                      nearStops[index])));
+                                    },
+                                  );
                                 },
-                              );
-                            },
-                          ),
-                        )
-                      : Padding(
-                          padding: EdgeInsets.only(top: 250.0),
-                          child: Center(
-                            child: Column(
-                              children: _restricted
-                                  ? <Widget>[
-                                      Icon(
-                                        Icons.not_interested,
-                                        size: 200.0,
-                                        color: Colors.grey[300],
-                                      ),
-                                      Text(
-                                          'Access to your location is restricted by OS!',
-                                          style: TextStyle(
-                                              color: Colors.grey[500]))
-                                    ]
-                                  : <Widget>[
-                                      Icon(
-                                        Icons.location_off,
-                                        size: 200.0,
-                                        color: Colors.grey[300],
-                                      ),
-                                      _gotPermission
-                                          ? Text('Location is turned off!',
+                              ),
+                            )
+                          : Padding(
+                              padding: EdgeInsets.only(top: 250.0),
+                              child: Center(
+                                child: Column(
+                                  children: _restricted
+                                      ? <Widget>[
+                                          Icon(
+                                            Icons.not_interested,
+                                            size: 200.0,
+                                            color: Colors.grey[300],
+                                          ),
+                                          Text(
+                                              AppLocalizations.of(context).restrictedNearMe,
                                               style: TextStyle(
                                                   color: Colors.grey[500]))
-                                          : _locationStatus
-                                              ? Text('Something went wrong!',
-                                                  style: TextStyle(
-                                                      color: Colors.grey[500]))
+                                        ]
+                                      : <Widget>[
+                                          Icon(
+                                            Icons.location_off,
+                                            size: 200.0,
+                                            color: Colors.grey[300],
+                                          ),
+                                          _gotPermission
+                                              ? _locationStatus
+                                                  ? Text(
+                                                      AppLocalizations.of(context).wrongNearMe,
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.grey[500]),
+                                                    )
+                                                  : Text(
+                                                      AppLocalizations.of(context).locationDeniedNearMe,
+                                                      style: TextStyle(
+                                                          color:
+                                                              Colors.grey[500]),
+                                                    )
                                               : Text(
-                                                  'Access to location is denied!',
+                                                  AppLocalizations.of(context).offLocationNearMe,
                                                   style: TextStyle(
-                                                      color: Colors.grey[500])),
-                                    ],
+                                                      color: Colors.grey[500]),
+                                                ),
+                                        ],
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-            )
-          : Center(
-              child: Padding(
-              padding: EdgeInsets.only(top: 250.0),
-              child: Column(
-                children: <Widget>[
-                  Icon(
-                    Icons.signal_cellular_off,
-                    size: 200.0,
-                    color: Colors.grey[300],
-                  ),
-                  Text(
-                    'No internet connection!',
-                    style: TextStyle(color: Colors.grey[500]),
-                  ),
-                  RaisedButton(
-                    child: Text('RETRY'),
-                    onPressed: () async {
-                      await (Connectivity().checkConnectivity()).then((status) {
-                        if (status == ConnectivityResult.none) {
-                          setState(() {
-                            _networkStatus = false;
-                          });
-                        } else {
-                          setState(() {
-                            _networkStatus = true;
-                            _isLoadingNew = false;
-                          });
-                          getApplicationDocumentsDirectory()
-                              .then((Directory directory) {
-                            nearStopsFile = new File(
-                                directory.path + '/' + nearStopsFileName);
-                            nearStopsExists = nearStopsFile.existsSync();
-                            if (nearStopsExists) {
-                              print('nearStops.json exists');
-                              var _nearStopsFile = List<Stop>();
-                              var nearStopsFileJson = json
-                                  .decode((nearStopsFile.readAsStringSync()));
-                              for (var nearStopFileJson in nearStopsFileJson) {
-                                _nearStopsFile
-                                    .add(Stop.fromJson(nearStopFileJson));
-                              }
-                              nearStops.clear();
-                              nearStops.addAll(_nearStopsFile);
-                              print('nearStops loaded');
+                )
+              : Center(
+                  child: Padding(
+                  padding: EdgeInsets.only(top: 250.0),
+                  child: Column(
+                    children: <Widget>[
+                      Icon(
+                        Icons.signal_cellular_off,
+                        size: 200.0,
+                        color: Colors.grey[300],
+                      ),
+                      Text(
+                        AppLocalizations.of(context).noConnectionNearMe,
+                        style: TextStyle(color: Colors.grey[500]),
+                      ),
+                      RaisedButton(
+                        child: Text(AppLocalizations.of(context).retryBtn),
+                        onPressed: () async {
+                          await (Connectivity().checkConnectivity())
+                              .then((status) {
+                            if (status == ConnectivityResult.none) {
                               setState(() {
-                                _isLoading = false;
+                                _networkStatus = false;
+                              });
+                            } else {
+                              setState(() {
+                                _networkStatus = true;
+                                _isLoadingNew = false;
+                              });
+                              getApplicationDocumentsDirectory()
+                                  .then((Directory directory) {
+                                nearStopsFile = new File(
+                                    directory.path + '/' + nearStopsFileName);
+                                nearStopsExists = nearStopsFile.existsSync();
+                                if (nearStopsExists) {
+                                  print('nearStops.json exists');
+                                  var _nearStopsFile = List<Stop>();
+                                  var nearStopsFileJson = json.decode(
+                                      (nearStopsFile.readAsStringSync()));
+                                  for (var nearStopFileJson
+                                      in nearStopsFileJson) {
+                                    _nearStopsFile
+                                        .add(Stop.fromJson(nearStopFileJson));
+                                  }
+                                  nearStops.clear();
+                                  nearStops.addAll(_nearStopsFile);
+                                  print('nearStops loaded');
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                }
                               });
                             }
                           });
-                        }
-                      });
-                    },
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            )),
+                )),
     );
   }
 }

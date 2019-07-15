@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dynamic_theme/dynamic_theme.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:easy_alert/easy_alert.dart';
@@ -12,10 +15,11 @@ import 'Actual.dart';
 import 'AllStops.dart';
 import 'NearMe.dart';
 import 'widgets/stopList.dart';
+import 'locale/locales.dart';
 
-void main() => runApp(new AlertProvider(
-      child: new MyApp(),
-      config: new AlertConfig(
+void main() => runApp(AlertProvider(
+      child: MyApp(),
+      config: AlertConfig(
         ok: "OK",
         cancel: "Cancel",
       ),
@@ -24,8 +28,18 @@ void main() => runApp(new AlertProvider(
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new MyAppPage(),
+    return MaterialApp(
+      localizationsDelegates: [
+        AppLocalizationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: [
+        const Locale('en', ""), // English
+        const Locale('sk', ""), // Slovak
+      ],
+      home: MyAppPage(),
     );
   }
 }
@@ -50,6 +64,28 @@ class MyAppState extends State<MyAppPage> {
   bool _isLoading = false;
   bool _gotPermission = false;
   bool _networkStatus = false;
+  bool darkTheme = false;
+  bool blackTheme = false;
+
+  _getprefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      if (prefs.getBool('darkTheme') == null ||
+          prefs.getBool('blackTheme') == null) {
+        setState(() async {
+          await prefs.setBool('darkTheme', false);
+          await prefs.setBool('blackTheme', false);
+        });
+      } else {
+        setState(() {
+          darkTheme = prefs.getBool('darkTheme');
+          blackTheme = prefs.getBool('blackTheme');
+          print(darkTheme);
+          print(blackTheme);
+        });
+      }
+    });
+  }
 
   _checkNetworkStatus() async {
     await (Connectivity().checkConnectivity()).then((status) {
@@ -57,8 +93,7 @@ class MyAppState extends State<MyAppPage> {
         _networkStatus = false;
         Alert.alert(context,
             title: "Offline",
-            content:
-                'No internet connection found, this app will not work properly.');
+            content: AppLocalizations.of(context).offlineDesc);
       } else {
         _networkStatus = true;
       }
@@ -71,36 +106,53 @@ class MyAppState extends State<MyAppPage> {
         .requestPermissions([PermissionGroup.locationWhenInUse]);
     await PermissionHandler()
         .checkPermissionStatus(PermissionGroup.locationWhenInUse)
-        .then((status) {
+        .then((status) async {
       if (status == PermissionStatus.granted) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('_gotPermission', true);
         _gotPermission = true;
       } else if (status == PermissionStatus.restricted) {
-        setState(() {
+        setState(() async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('_gotPermission', false);
           _gotPermission = false;
           Alert.alert(context,
-              title: "Attention!",
-              content:
-                  'Acces to your locaton is restricted by your OS, some functions might not work properly.');
+              title: AppLocalizations.of(context).attention,
+              content: AppLocalizations.of(context).attentionDesc);
         });
         print('restricted');
       } else if (status == PermissionStatus.unknown) {
         Alert.confirm(context,
-                title: "Access unknow!",
-                content:
-                    "Permission status of your position is unknown. Do you want to use your location(must be enabled in settings)? Otherways your location will not be used!")
-            .then((int ret) => ret == Alert.OK
-                ? _gotPermission = true
-                : _gotPermission = false);
+                title: AppLocalizations.of(context).unknown,
+                content: AppLocalizations.of(context).unknownDesc)
+            .then((int ret) async {
+          if (ret == Alert.OK) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('_gotPermission', true);
+            _gotPermission = true;
+          } else {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('_gotPermission', false);
+            _gotPermission = false;
+          }
+        });
       } else if (status == PermissionStatus.disabled) {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('_gotPermission', true);
         _gotPermission = true;
       } else {
         Alert.confirm(context,
-                title: "Access denied!",
-                content:
-                    "Access to your position was denied. Do you want to change it in settings? Otherways some functions will be restricted!")
-            .then((int ret) => ret == Alert.OK
-                ? PermissionHandler().openAppSettings()
-                : _gotPermission = false);
+                title: AppLocalizations.of(context).denied,
+                content: AppLocalizations.of(context).deniedDesc)
+            .then((int ret) async {
+          if (ret == Alert.OK) {
+            PermissionHandler().openAppSettings();
+          } else {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('_gotPermission', false);
+            _gotPermission = false;
+          }
+        });
       }
     });
     return _gotPermission;
@@ -148,6 +200,7 @@ class MyAppState extends State<MyAppPage> {
 
   @override
   void initState() {
+    _getprefs();
     _checkNetworkStatus().then((status) {
       if (status) {
         _checkPermisson().then((permission) {
@@ -176,8 +229,6 @@ class MyAppState extends State<MyAppPage> {
                 });
               });
             });
-          } else {
-            //TODO
           }
         });
       } else {
@@ -197,41 +248,76 @@ class MyAppState extends State<MyAppPage> {
   ];
   @override
   Widget build(BuildContext context) {
+    Locale myLocale = Localizations.localeOf(context);
     return _isLoading
         ? MaterialApp(
             home: Scaffold(
-                body: Center(
-                    child: Icon(
-            Icons.directions_transit,
-            color: Colors.red,
-            size: 250.0,
-          ))))
-        : MaterialApp(
-            title: 'MHD Virtual Table',
-            theme: ThemeData(
-              primaryColor: Colors.black,
+              body: Center(
+                child: Icon(
+                  Icons.directions_transit,
+                  color: Colors.red,
+                  size: 250.0,
+                ),
+              ),
             ),
-            home: Scaffold(
-              body: _pageOptions[_selectedPage],
-              primary: true,
-              bottomNavigationBar: BottomNavigationBar(
-                  // type: BottomNavigationBarType.shifting,
-                  selectedItemColor: Color(0xFFe90007),
-                  unselectedItemColor: Color(0xFF737373),
-                  currentIndex: _selectedPage,
-                  onTap: (int index) {
-                    setState(() {
-                      _selectedPage = index;
-                    });
-                  },
-                  items: [
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.near_me), title: Text("Near me")),
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.my_location), title: Text("Actual")),
-                    BottomNavigationBarItem(
-                        icon: Icon(Icons.dashboard), title: Text("All stops")),
-                  ]),
-            ));
+          )
+        : DynamicTheme(
+            defaultBrightness: Brightness.light,
+            data: (brightness) => ThemeData(
+                  backgroundColor: blackTheme ? Colors.black : null,
+                  dialogBackgroundColor: blackTheme ? Colors.black : null,
+                  scaffoldBackgroundColor: blackTheme ? Colors.black : null,
+                  primaryColor: Colors.redAccent[700],
+                  accentColor: Colors.red,
+                  primaryColorDark: Colors.redAccent[700],
+                  toggleableActiveColor: Colors.red,
+                  primarySwatch: Colors.red,
+                  brightness: brightness,
+                ),
+            themedWidgetBuilder: (context, theme) {
+              return MaterialApp(
+                theme: theme,
+                title: 'MHD Virtual Table',
+                localizationsDelegates: [
+                  AppLocalizationsDelegate(),
+                  GlobalMaterialLocalizations.delegate,
+                  GlobalWidgetsLocalizations.delegate,
+                  GlobalCupertinoLocalizations.delegate,
+                ],
+                supportedLocales: [
+                  const Locale('en', ""), // English
+                  const Locale('sk', ""), // Slovak
+                ],
+                home: Scaffold(
+                  body: _pageOptions[_selectedPage],
+                  primary: true,
+                  bottomNavigationBar: BottomNavigationBar(
+                      backgroundColor: blackTheme ? Colors.black : null,
+                      // type: BottomNavigationBarType.shifting,
+                      selectedItemColor: Color(0xFFe90007),
+                      unselectedItemColor: Color(0xFF737373),
+                      currentIndex: _selectedPage,
+                      onTap: (int index) {
+                        setState(() {
+                          _selectedPage = index;
+                        });
+                      },
+                      items: [
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.near_me),
+                            title:
+                                Text(AppLocalizations.of(context).nearMeNav)),
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.my_location),
+                            title:
+                                Text(AppLocalizations.of(context).actualNav)),
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.dashboard),
+                            title:
+                                Text(AppLocalizations.of(context).allstopsNav)),
+                      ]),
+                ),
+              );
+            });
   }
 }

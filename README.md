@@ -18,7 +18,7 @@ Offline mode
 - alert ✔
 
 Final tuches
-- add settings
-- add dark mode
-- add sk locatization
+- add settings ✔
+- add dark mode ✔
+- add sk locatization ✔
 - add some animations

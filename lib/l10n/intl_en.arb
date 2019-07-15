@@ -1,0 +1,141 @@
+{
+  "@@last_modified": "2019-07-15T18:37:53.584430",
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel alert button",
+    "type": "text",
+    "placeholders": {}
+  },
+  "offlineDesc": "No internet connection found, this app will not work properly.",
+  "@offlineDesc": {
+    "description": "Offline alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "attention": "Attention!",
+  "@attention": {
+    "description": "Attention alert",
+    "type": "text",
+    "placeholders": {}
+  },
+  "attentionDesc": "Access to your locaton is restricted by your OS, some functions might not work properly.",
+  "@attentionDesc": {
+    "description": "Attention alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "unknown": "Access unknow!",
+  "@unknown": {
+    "description": "Unknown alert",
+    "type": "text",
+    "placeholders": {}
+  },
+  "unknownDesc": "Permission status of your position is unknown. Do you want to use your location(must be enabled in settings)? Otherways your location will not be used!",
+  "@unknownDesc": {
+    "description": "Unknown alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "denied": "Access denied!",
+  "@denied": {
+    "description": "Denied alert",
+    "type": "text",
+    "placeholders": {}
+  },
+  "deniedDesc": "Access to your position was denied. Do you want to change it in settings? Otherways some functions will be restricted!",
+  "@deniedDesc": {
+    "description": "Denied alert description",
+    "type": "text",
+    "placeholders": {}
+  },
+  "nearMeNav": "Near me",
+  "@nearMeNav": {
+    "description": "Bottom Navigation Bar Near me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "actualNav": "Actual",
+  "@actualNav": {
+    "description": "Bottom Navigation Bar Actual",
+    "type": "text",
+    "placeholders": {}
+  },
+  "allstopsNav": "All stops",
+  "@allstopsNav": {
+    "description": "Bottom Navigation Bar All stops",
+    "type": "text",
+    "placeholders": {}
+  },
+  "nearMeTitle": "Nearest stops",
+  "@nearMeTitle": {
+    "description": "Title Near me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "allstopsTitle": "Stops",
+  "@allstopsTitle": {
+    "description": "Title All stops",
+    "type": "text",
+    "placeholders": {}
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Settings Title",
+    "type": "text",
+    "placeholders": {}
+  },
+  "restrictedNearMe": "Access to your location is restricted by OS!",
+  "@restrictedNearMe": {
+    "description": "Restricted Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "offLocationNearMe": "Location is turned off!",
+  "@offLocationNearMe": {
+    "description": "Location off Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "wrongNearMe": "Something went wrong!",
+  "@wrongNearMe": {
+    "description": "Wrong Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "locationDeniedNearMe": "Access to location is denied!",
+  "@locationDeniedNearMe": {
+    "description": "Location Denied Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "noConnectionNearMe": "No internet connection!",
+  "@noConnectionNearMe": {
+    "description": "No Connection Background Near Me",
+    "type": "text",
+    "placeholders": {}
+  },
+  "retryBtn": "RETRY",
+  "@retryBtn": {
+    "description": "Retry button",
+    "type": "text",
+    "placeholders": {}
+  },
+  "searchHint": "Search...",
+  "@searchHint": {
+    "description": "Search Hint",
+    "type": "text",
+    "placeholders": {}
+  },
+  "darkTheme": "Dark theme",
+  "@darkTheme": {
+    "description": "Dark theme option",
+    "type": "text",
+    "placeholders": {}
+  },
+  "blackTheme": "Black theme",
+  "@blackTheme": {
+    "description": "Dark theme option",
+    "type": "text",
+    "placeholders": {}
+  }
+}
