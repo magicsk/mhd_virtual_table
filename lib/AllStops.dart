@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
@@ -29,7 +30,7 @@ class _AllStopsState extends State<AllStopsPage> {
   bool stopsExists = false;
   bool savedExists = false;
   bool _isLoading = true;
-
+  bool _networkStatus = false;
 
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _textController = new TextEditingController();
@@ -47,6 +48,17 @@ class _AllStopsState extends State<AllStopsPage> {
       }
     }
     return _stops;
+  }
+
+  checkNetworkStatus() async {
+    await (Connectivity().checkConnectivity()).then((status) {
+      if (status == ConnectivityResult.none) {
+        _networkStatus = false;
+      } else {
+        _networkStatus = true;
+      }
+    });
+    return _networkStatus;
   }
 
   @override
@@ -100,33 +112,40 @@ class _AllStopsState extends State<AllStopsPage> {
             _isLoading = false;
           });
         } else {
-          fetchStops().then((value) {
-            setState(() {
-              stops.addAll(value);
-              getApplicationDocumentsDirectory().then((Directory directory) {
-                File file = new File(directory.path + "/" + stopsFileName);
-                file.createSync();
-                file.writeAsStringSync(json.encode(stops));
-                print('stops saved');
-                int i, s;
-                for (s = 0; s < saved.length; s++) {
-                  for (i = 0; i < stops.length; i++) {
-                    if (saved[s].name == stops[i].name) {
-                      stops.remove(stops[i]);
-                    }
-                  }
-                }
-                print('stops cleared');
-                stops.sort((a, b) {
-                  return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-                });
-                print('stops sorted');
+          checkNetworkStatus().then((status) {
+            if (status) {
+              fetchStops().then((value) {
                 setState(() {
-                  _stopsForDisplay = stops;
-                  _isLoading = false;
+                  stops.addAll(value);
+                  getApplicationDocumentsDirectory()
+                      .then((Directory directory) {
+                    File file = new File(directory.path + "/" + stopsFileName);
+                    file.createSync();
+                    file.writeAsStringSync(json.encode(stops));
+                    print('stops saved');
+                    int i, s;
+                    for (s = 0; s < saved.length; s++) {
+                      for (i = 0; i < stops.length; i++) {
+                        if (saved[s].name == stops[i].name) {
+                          stops.remove(stops[i]);
+                        }
+                      }
+                    }
+                    print('stops cleared');
+                    stops.sort((a, b) {
+                      return a.name
+                          .toLowerCase()
+                          .compareTo(b.name.toLowerCase());
+                    });
+                    print('stops sorted');
+                    setState(() {
+                      _stopsForDisplay = stops;
+                      _isLoading = false;
+                    });
+                  });
                 });
               });
-            });
+            }
           });
         }
       });

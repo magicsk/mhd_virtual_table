@@ -11,7 +11,7 @@ Add nearme
 
 Better permission check
 - if denied alert ✔
-- cut nearme ✔ and actual availability
+- cut nearme ✔ and actual availability ✔
 
 Offline mode
 - load cached stops & nearme ✔

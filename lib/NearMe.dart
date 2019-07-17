@@ -107,26 +107,33 @@ class _NearMeState extends State<NearMePage> {
             nearStops.clear();
             nearStops.addAll(_nearStopsFile);
             print('nearStops loaded');
-            setState(() {
-              _isLoading = false;
+            _getprefs().then((permission) {
+                _checkLocationStatus().then((status) {
+                  setState(() {
+                    _locationStatus = status;
+                    _gotPermission = permission;
+                    _isLoading = false;
+                  });
+                });
             });
           }
         });
-        _checkLocationStatus().then((status) {
+        _getprefs().then((permission) {
           setState(() {
-            _locationStatus = status;
+            _gotPermission = permission;
           });
-          if (status) {
-            _getprefs().then((permission) {
+          if (permission) {
+            _checkLocationStatus().then((status) {
               setState(() {
-                _gotPermission = permission;
+                _locationStatus = status;
               });
-              if (permission) {
+              if (status) {
                 fetchNearStops().then((value) {
                   setState(() {
                     nearStops.clear();
                     nearStops.addAll(value);
                     _isLoadingNew = false;
+                    _isLoading = false;
                     getApplicationDocumentsDirectory()
                         .then((Directory directory) {
                       File file =
@@ -140,14 +147,13 @@ class _NearMeState extends State<NearMePage> {
               } else {
                 setState(() {
                   _isLoadingNew = false;
-                  _locationStatus = false;
+                  _isLoading = false;
                 });
               }
             });
           } else {
             setState(() {
               _isLoadingNew = false;
-              _locationStatus = false;
               _isLoading = false;
             });
           }
@@ -155,12 +161,7 @@ class _NearMeState extends State<NearMePage> {
       } else {
         setState(() {
           _networkStatus = status;
-          _isLoading = true;
-        });
-        _checkLocationStatus().then((status) {
-          setState(() {
-            _locationStatus = status;
-          });
+          _isLoading = false;
         });
       }
     });
@@ -277,7 +278,8 @@ class _NearMeState extends State<NearMePage> {
                                             color: Colors.grey[300],
                                           ),
                                           Text(
-                                              AppLocalizations.of(context).restrictedNearMe,
+                                              AppLocalizations.of(context)
+                                                  .restrictedNearMe,
                                               style: TextStyle(
                                                   color: Colors.grey[500]))
                                         ]
@@ -290,19 +292,24 @@ class _NearMeState extends State<NearMePage> {
                                           _gotPermission
                                               ? _locationStatus
                                                   ? Text(
-                                                      AppLocalizations.of(context).wrongNearMe,
+                                                      AppLocalizations.of(
+                                                              context)
+                                                          .wrongNearMe,
                                                       style: TextStyle(
                                                           color:
                                                               Colors.grey[500]),
                                                     )
                                                   : Text(
-                                                      AppLocalizations.of(context).locationDeniedNearMe,
+                                                      AppLocalizations.of(
+                                                              context)
+                                                          .offLocationNearMe,
                                                       style: TextStyle(
                                                           color:
                                                               Colors.grey[500]),
                                                     )
                                               : Text(
-                                                  AppLocalizations.of(context).offLocationNearMe,
+                                                  AppLocalizations.of(context)
+                                                      .locationDeniedNearMe,
                                                   style: TextStyle(
                                                       color: Colors.grey[500]),
                                                 ),
