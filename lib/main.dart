@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:dynamic_theme/dynamic_theme.dart';
+import 'package:persist_theme/persist_theme.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:easy_alert/easy_alert.dart';
@@ -25,21 +27,54 @@ void main() => runApp(AlertProvider(
       ),
     ));
 
+var primaryColor = Color(0xFFe90007);
+
+final _model = ThemeModel(
+  customLightTheme: ThemeData(
+    primaryColor: primaryColor,
+    accentColor: Colors.red,
+  ),
+  customDarkTheme: ThemeData(
+    primaryColor: primaryColor,
+    accentColor: Colors.red,
+    brightness: Brightness.dark,
+    primaryColorDark: primaryColor,
+    toggleableActiveColor: Colors.red,
+  ),
+  customBlackTheme: ThemeData(
+    primaryColor: primaryColor,
+    accentColor: Colors.red,
+    brightness: Brightness.dark,
+    backgroundColor: Colors.black,
+    dialogBackgroundColor: Colors.black,
+    scaffoldBackgroundColor: Colors.black,
+    bottomAppBarColor: Colors.black,
+    primaryColorDark: primaryColor,
+    toggleableActiveColor: Colors.red,
+  ),
+);
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      localizationsDelegates: [
-        AppLocalizationsDelegate(),
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: [
-        const Locale('en', ""), // English
-        const Locale('sk', ""), // Slovak
-      ],
-      home: MyAppPage(),
+    return ListenableProvider<ThemeModel>(
+      builder: (_) => _model..init(),
+      child: Consumer<ThemeModel>(builder: (context, model, child) {
+        return MaterialApp(
+          theme: model.theme,
+          localizationsDelegates: [
+            AppLocalizationsDelegate(),
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: [
+            const Locale('en', ""), // English
+            const Locale('sk', ""), // Slovak
+          ],
+          home: MyAppPage(),
+        );
+      }),
     );
   }
 }
@@ -64,28 +99,6 @@ class MyAppState extends State<MyAppPage> {
   bool _isLoading = false;
   bool _gotPermission = false;
   bool _networkStatus = false;
-  bool darkTheme = false;
-  bool blackTheme = false;
-
-  _getprefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      if (prefs.getBool('darkTheme') == null ||
-          prefs.getBool('blackTheme') == null) {
-        setState(() async {
-          await prefs.setBool('darkTheme', false);
-          await prefs.setBool('blackTheme', false);
-        });
-      } else {
-        setState(() {
-          darkTheme = prefs.getBool('darkTheme');
-          blackTheme = prefs.getBool('blackTheme');
-          print(darkTheme);
-          print(blackTheme);
-        });
-      }
-    });
-  }
 
   _checkNetworkStatus() async {
     await (Connectivity().checkConnectivity()).then((status) {
@@ -147,6 +160,9 @@ class MyAppState extends State<MyAppPage> {
             .then((int ret) async {
           if (ret == Alert.OK) {
             PermissionHandler().openAppSettings();
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            await prefs.setBool('_gotPermission', false);
+            _gotPermission = false;
           } else {
             SharedPreferences prefs = await SharedPreferences.getInstance();
             await prefs.setBool('_gotPermission', false);
@@ -200,7 +216,6 @@ class MyAppState extends State<MyAppPage> {
 
   @override
   void initState() {
-    _getprefs();
     _checkNetworkStatus().then((status) {
       if (status) {
         _checkPermisson().then((permission) {
@@ -248,35 +263,25 @@ class MyAppState extends State<MyAppPage> {
   ];
   @override
   Widget build(BuildContext context) {
+    final _theme = Provider.of<ThemeModel>(context);
     Locale myLocale = Localizations.localeOf(context);
-    return _isLoading
-        ? MaterialApp(
-            home: Scaffold(
-              body: Center(
-                child: Icon(
-                  Icons.directions_transit,
-                  color: Colors.red,
-                  size: 250.0,
+    return ListenableProvider<ThemeModel>(
+      builder: (_) => _model..init(),
+      child: Consumer<ThemeModel>(builder: (context, model, child) {
+        return _isLoading
+            ? MaterialApp(
+                home: Scaffold(
+                  body: Center(
+                    child: Icon(
+                      Icons.directions_transit,
+                      color: Colors.red,
+                      size: 250.0,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          )
-        : DynamicTheme(
-            defaultBrightness: Brightness.light,
-            data: (brightness) => ThemeData(
-                  backgroundColor: blackTheme ? Colors.black : null,
-                  dialogBackgroundColor: blackTheme ? Colors.black : null,
-                  scaffoldBackgroundColor: blackTheme ? Colors.black : null,
-                  primaryColor: Colors.redAccent[700],
-                  accentColor: Colors.red,
-                  primaryColorDark: Colors.redAccent[700],
-                  toggleableActiveColor: Colors.red,
-                  primarySwatch: Colors.red,
-                  brightness: brightness,
-                ),
-            themedWidgetBuilder: (context, theme) {
-              return MaterialApp(
-                theme: theme,
+              )
+            : MaterialApp(
+                theme: model.theme,
                 title: 'MHD Virtual Table',
                 localizationsDelegates: [
                   AppLocalizationsDelegate(),
@@ -292,10 +297,10 @@ class MyAppState extends State<MyAppPage> {
                   body: _pageOptions[_selectedPage],
                   primary: true,
                   bottomNavigationBar: BottomNavigationBar(
-                      backgroundColor: blackTheme ? Colors.black : null,
+                      backgroundColor: model.backgroundColor,
                       // type: BottomNavigationBarType.shifting,
-                      selectedItemColor: Color(0xFFe90007),
-                      unselectedItemColor: Color(0xFF737373),
+                      selectedItemColor: primaryColor,
+                      // unselectedItemColor: Color(0xFF737373),
                       currentIndex: _selectedPage,
                       onTap: (int index) {
                         setState(() {
@@ -318,6 +323,7 @@ class MyAppState extends State<MyAppPage> {
                       ]),
                 ),
               );
-            });
+      }),
+    );
   }
 }
