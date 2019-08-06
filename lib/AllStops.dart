@@ -36,7 +36,7 @@ class _AllStopsState extends State<AllStopsPage> {
   final TextEditingController _textController = new TextEditingController();
 
   Future<List<Stop>> fetchStops() async {
-    var url = 'https://api.magicsk.eu/stops';
+    var url = 'https://api.magicsk.eu/stops2';
     var response = await http.get(url);
 
     var _stops = List<Stop>();

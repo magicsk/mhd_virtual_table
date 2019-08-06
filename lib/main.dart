@@ -9,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:connectivity/connectivity.dart';
 import 'package:easy_alert/easy_alert.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:preferences/preferences.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
@@ -19,13 +20,16 @@ import 'NearMe.dart';
 import 'widgets/stopList.dart';
 import 'locale/locales.dart';
 
-void main() => runApp(AlertProvider(
-      child: MyApp(),
-      config: AlertConfig(
-        ok: "OK",
-        cancel: "Cancel",
-      ),
-    ));
+void main() async {
+  await PrefService.init(prefix: 'pref_');
+  runApp(AlertProvider(
+    child: MyApp(),
+    config: AlertConfig(
+      ok: "OK",
+      cancel: "Cancel",
+    ),
+  ));
+}
 
 var primaryColor = Color(0xFFe90007);
 
@@ -33,6 +37,8 @@ final _model = ThemeModel(
   customLightTheme: ThemeData(
     primaryColor: primaryColor,
     accentColor: Colors.red,
+    toggleableActiveColor: Colors.red,
+    buttonColor: Colors.red,
   ),
   customDarkTheme: ThemeData(
     primaryColor: primaryColor,
@@ -40,9 +46,10 @@ final _model = ThemeModel(
     brightness: Brightness.dark,
     primaryColorDark: primaryColor,
     toggleableActiveColor: Colors.red,
+    buttonColor: Colors.red,
   ),
   customBlackTheme: ThemeData(
-    primaryColor: primaryColor,
+    primaryColor: primaryColor, //can be black
     accentColor: Colors.red,
     brightness: Brightness.dark,
     backgroundColor: Colors.black,
@@ -51,6 +58,7 @@ final _model = ThemeModel(
     bottomAppBarColor: Colors.black,
     primaryColorDark: primaryColor,
     toggleableActiveColor: Colors.red,
+    buttonColor: Colors.red,
   ),
 );
 
@@ -175,7 +183,7 @@ class MyAppState extends State<MyAppPage> {
   }
 
   Future<List<Stop>> fetchStops() async {
-    var url = 'https://api.magicsk.eu/stops';
+    var url = 'https://api.magicsk.eu/stops2';
     var response = await http.get(url);
 
     var _stops = List<Stop>();
