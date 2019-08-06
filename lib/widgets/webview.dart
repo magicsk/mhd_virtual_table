@@ -20,7 +20,7 @@ class StopWebViewState extends State<StopWebView> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       tableThemeInt = prefs.getInt('tableThemeInt');
-      url = stop.url+tableThemeInt.toString();
+      url = stop.url + tableThemeInt.toString();
       print(url);
       _isLoading = false;
     });
@@ -31,16 +31,18 @@ class StopWebViewState extends State<StopWebView> {
     _getprefs();
     super.initState();
   }
+
   final Stop stop;
   StopWebViewState(this.stop);
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(0.0),
-        child: AppBar(backgroundColor: Colors.black),
-      ),
-      body: _isLoading ? Scaffold() :  WebView(
-          initialUrl: url, javascriptMode: JavascriptMode.unrestricted,),
+      appBar: AppBar(backgroundColor: Colors.black),
+      body: _isLoading
+          ? Scaffold()
+          : WebView(
+              initialUrl: url,
+              javascriptMode: JavascriptMode.unrestricted,
+            ),
     );
   }
 }
