@@ -10,6 +10,7 @@ import 'package:connectivity/connectivity.dart';
 import 'package:easy_alert/easy_alert.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:preferences/preferences.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
@@ -263,12 +264,6 @@ class MyAppState extends State<MyAppPage> {
     super.initState();
   }
 
-  int _selectedPage = 2;
-  final _pageOptions = [
-    NearMePage(),
-    ActualPage(),
-    AllStopsPage(),
-  ];
   @override
   Widget build(BuildContext context) {
     final _theme = Provider.of<ThemeModel>(context);
@@ -301,34 +296,57 @@ class MyAppState extends State<MyAppPage> {
                   const Locale('en', ""), // English
                   const Locale('sk', ""), // Slovak
                 ],
-                home: Scaffold(
-                  body: _pageOptions[_selectedPage],
-                  primary: true,
-                  bottomNavigationBar: BottomNavigationBar(
-                      backgroundColor: model.backgroundColor,
-                      // type: BottomNavigationBarType.shifting,
-                      selectedItemColor: primaryColor,
-                      // unselectedItemColor: Color(0xFF737373),
-                      currentIndex: _selectedPage,
-                      onTap: (int index) {
-                        setState(() {
-                          _selectedPage = index;
-                        });
+                home: WillPopScope(
+                  // Prevent swipe popping of this page. Use explicit exit buttons only.
+                  onWillPop: () => Future<bool>.value(true),
+                  child: DefaultTextStyle(
+                    style: CupertinoTheme.of(context).textTheme.textStyle,
+                    child: CupertinoTabScaffold(
+                      tabBar: CupertinoTabBar(
+                        items: <BottomNavigationBarItem>[
+                          BottomNavigationBarItem(
+                              icon: Icon(CupertinoIcons.near_me),
+                              title:
+                                  Text(AppLocalizations.of(context).nearMeNav)),
+                          BottomNavigationBarItem(
+                              icon: Icon(CupertinoIcons.circle_filled),
+                              title:
+                                  Text(AppLocalizations.of(context).actualNav)),
+                          BottomNavigationBarItem(
+                              icon: Icon(CupertinoIcons.dashboard),
+                              title: Text(
+                                  AppLocalizations.of(context).allstopsNav)),
+                        ],
+                      ),
+                      tabBuilder: (BuildContext context, int index) {
+                        assert(index >= 0 && index <= 2);
+                        switch (index) {
+                          case 0:
+                            return CupertinoTabView(
+                              builder: (BuildContext context) => NearMePage(),
+                              defaultTitle:
+                                  AppLocalizations.of(context).nearMeTitle,
+                            );
+                            break;
+                          case 1:
+                            return CupertinoTabView(
+                              builder: (BuildContext context) => ActualPage(),
+                              defaultTitle:
+                                 AppLocalizations.of(context).actualNav,
+                            );
+                            break;
+                          case 2:
+                            return CupertinoTabView(
+                              builder: (BuildContext context) => AllStopsPage(),
+                              defaultTitle:
+                                  AppLocalizations.of(context).allstopsTitle,
+                            );
+                            break;
+                        }
+                        return null;
                       },
-                      items: [
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.near_me),
-                            title:
-                                Text(AppLocalizations.of(context).nearMeNav)),
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.my_location),
-                            title:
-                                Text(AppLocalizations.of(context).actualNav)),
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.dashboard),
-                            title:
-                                Text(AppLocalizations.of(context).allstopsNav)),
-                      ]),
+                    ),
+                  ),
                 ),
               );
       }),

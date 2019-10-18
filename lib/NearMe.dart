@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -108,13 +109,13 @@ class _NearMeState extends State<NearMePage> {
             nearStops.addAll(_nearStopsFile);
             print('nearStops loaded');
             _getprefs().then((permission) {
-                _checkLocationStatus().then((status) {
-                  setState(() {
-                    _locationStatus = status;
-                    _gotPermission = permission;
-                    _isLoading = false;
-                  });
+              _checkLocationStatus().then((status) {
+                setState(() {
+                  _locationStatus = status;
+                  _gotPermission = permission;
+                  _isLoading = false;
                 });
+              });
             });
           }
         });
@@ -170,77 +171,69 @@ class _NearMeState extends State<NearMePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        centerTitle: true,
-        title: Text(AppLocalizations.of(context).nearMeTitle),
-        actions: _networkStatus
-            ? <Widget>[
-                _isLoadingNew
-                    ? Padding(
-                        padding: EdgeInsets.only(
-                            top: 21.0, bottom: 19.0, right: 15.0),
-                        child: SizedBox(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                          width: 15.0,
-                        ))
-                    : IconButton(
-                        icon: Icon(Icons.refresh),
-                        color: Colors.white,
-                        onPressed: _locationStatus
-                            ? () async {
-                                setState(() {
-                                  _isLoadingNew = true;
-                                });
-                                var currentLocation;
-                                try {
-                                  currentLocation =
-                                      await geolocator.getCurrentPosition(
-                                          desiredAccuracy:
-                                              LocationAccuracy.best);
-                                } catch (e) {
-                                  currentLocation = null;
-                                }
-                                var url = 'https://api.magicsk.eu/nearme?lat=' +
-                                    currentLocation.latitude.toString() +
-                                    '&long=' +
-                                    currentLocation.longitude.toString();
-                                var response = await http.get(url);
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        trailing: _networkStatus
+            ? _isLoadingNew
+                ? Padding(
+                    padding:
+                        EdgeInsets.only(top: 14.0, bottom: 14.0, right: 10.0),
+                    child: SizedBox(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 1.0,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                      ),
+                      width: 15.0,
+                    ))
+                : CupertinoButton(
+                    child: Text('Reload',textScaleFactor: 0.8,),
+                    padding: EdgeInsets.only(right: 0.0),
+                    onPressed: _locationStatus
+                        ? () async {
+                            setState(() {
+                              _isLoadingNew = true;
+                            });
+                            var currentLocation;
+                            try {
+                              currentLocation =
+                                  await geolocator.getCurrentPosition(
+                                      desiredAccuracy: LocationAccuracy.best);
+                            } catch (e) {
+                              currentLocation = null;
+                            }
+                            var url = 'https://api.magicsk.eu/nearme?lat=' +
+                                currentLocation.latitude.toString() +
+                                '&long=' +
+                                currentLocation.longitude.toString();
+                            var response = await http.get(url);
 
-                                var _nearStops = List<Stop>();
-                                print("Fetching: " + url);
-                                if (response.statusCode == 200) {
-                                  var nearStopsJson = json
-                                      .decode(utf8.decode(response.bodyBytes));
-                                  for (var nearStopJson in nearStopsJson) {
-                                    _nearStops.add(Stop.fromJson(nearStopJson));
-                                  }
-                                }
-                                setState(() {
-                                  nearStops.clear();
-                                  nearStops.addAll(_nearStops);
-                                  _isLoadingNew = false;
-                                  getApplicationDocumentsDirectory()
-                                      .then((Directory directory) {
-                                    File file = new File(directory.path +
-                                        "/" +
-                                        nearStopsFileName);
-                                    file.createSync();
-                                    file.writeAsStringSync(
-                                        json.encode(nearStops));
-                                    print('nearStops saved');
-                                  });
-                                });
+                            var _nearStops = List<Stop>();
+                            print("Fetching: " + url);
+                            if (response.statusCode == 200) {
+                              var nearStopsJson =
+                                  json.decode(utf8.decode(response.bodyBytes));
+                              for (var nearStopJson in nearStopsJson) {
+                                _nearStops.add(Stop.fromJson(nearStopJson));
                               }
-                            : null)
-              ]
+                            }
+                            setState(() {
+                              nearStops.clear();
+                              nearStops.addAll(_nearStops);
+                              _isLoadingNew = false;
+                              getApplicationDocumentsDirectory()
+                                  .then((Directory directory) {
+                                File file = new File(
+                                    directory.path + "/" + nearStopsFileName);
+                                file.createSync();
+                                file.writeAsStringSync(json.encode(nearStops));
+                                print('nearStops saved');
+                              });
+                            });
+                          }
+                        : null)
             : null,
       ),
-      body: _isLoading
+      child: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _networkStatus
               ? Center(

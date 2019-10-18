@@ -36,7 +36,11 @@ class StopWebViewState extends State<StopWebView> {
   StopWebViewState(this.stop);
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.black),
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(stop.name),
+        backgroundColor: Colors.black,
+      ),
       body: _isLoading
           ? Scaffold()
           : WebView(
