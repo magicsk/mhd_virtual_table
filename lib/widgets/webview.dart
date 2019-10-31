@@ -16,7 +16,7 @@ class StopWebViewState extends State<StopWebView> {
   bool _isLoading = true;
   var url;
 
-  _getprefs() async {
+  _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       tableThemeInt = prefs.getInt('tableThemeInt');
@@ -28,7 +28,7 @@ class StopWebViewState extends State<StopWebView> {
 
   @override
   void initState() {
-    _getprefs();
+    _getPrefs();
     super.initState();
   }
   final Stop stop;

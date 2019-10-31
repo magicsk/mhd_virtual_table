@@ -14,6 +14,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
+import 'TripPlanner.dart';
 import 'Actual.dart';
 import 'AllStops.dart';
 import 'NearMe.dart';
@@ -104,9 +105,17 @@ class MyAppState extends State<MyAppPage> {
   String nearStopsFileName = 'nearStops.json';
   File stopsFile;
   File nearStopsFile;
+  int tableThemeInt;
   bool _isLoading = false;
   bool _gotPermission = false;
   bool _networkStatus = false;
+
+  _getPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      tableThemeInt = prefs.getInt('tableThemeInt');
+    });
+  }
 
   _checkNetworkStatus() async {
     await (Connectivity().checkConnectivity()).then((status) {
@@ -208,7 +217,9 @@ class MyAppState extends State<MyAppPage> {
     var url = 'https://api.magicsk.eu/nearme?lat=' +
         currentLocation.latitude.toString() +
         '&long=' +
-        currentLocation.longitude.toString();
+        currentLocation.longitude.toString() +
+        '&skin=' +
+        tableThemeInt.toString();
     var response = await http.get(url);
 
     var _nearStops = List<Stop>();
@@ -224,6 +235,7 @@ class MyAppState extends State<MyAppPage> {
 
   @override
   void initState() {
+    _getPrefs();
     _checkNetworkStatus().then((status) {
       if (status) {
         _checkPermisson().then((permission) {
@@ -265,6 +277,7 @@ class MyAppState extends State<MyAppPage> {
 
   int _selectedPage = 2;
   final _pageOptions = [
+    TripPlannerPage(),
     NearMePage(),
     ActualPage(),
     AllStopsPage(),
@@ -306,7 +319,7 @@ class MyAppState extends State<MyAppPage> {
                   primary: true,
                   bottomNavigationBar: BottomNavigationBar(
                       backgroundColor: model.backgroundColor,
-                      // type: BottomNavigationBarType.shifting,
+                      type: BottomNavigationBarType.fixed,
                       selectedItemColor: primaryColor,
                       // unselectedItemColor: Color(0xFF737373),
                       currentIndex: _selectedPage,
@@ -316,6 +329,11 @@ class MyAppState extends State<MyAppPage> {
                         });
                       },
                       items: [
+                        // add localization
+                        BottomNavigationBarItem(
+                            icon: Icon(Icons.transfer_within_a_station),
+                            title:
+                                Text('Trip planner')),
                         BottomNavigationBarItem(
                             icon: Icon(Icons.near_me),
                             title:

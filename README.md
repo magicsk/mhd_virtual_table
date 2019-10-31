@@ -21,4 +21,5 @@ Final tuches
 - add settings ✔
 - add dark mode ✔
 - add sk locatization ✔
+- add skin changing
 - add some animations
