@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
 import 'package:connectivity/connectivity.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'locale/locales.dart';
 
@@ -10,7 +11,22 @@ class ActualPage extends StatefulWidget {
 }
 
 class _ActualPageState extends State<ActualPage> {
+  int tableThemeInt;
   bool _networkStatus = true;
+  bool _isLoading = true;
+  var baseUrl = "https://imhd.sk/ba/online-zastavkova-tabula?fullscreen=0&skin=";
+  var url;
+
+  _getPrefs() async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      tableThemeInt = prefs.getInt('tableThemeInt');
+      url = baseUrl+tableThemeInt.toString();
+      print(url);
+      _isLoading = false;
+    });
+  }
+
   _checkNetworkStatus() async {
     await (Connectivity().checkConnectivity()).then((status) {
       if (status == ConnectivityResult.none) {
@@ -27,6 +43,7 @@ class _ActualPageState extends State<ActualPage> {
 
   @override
   void initState() {
+    _getPrefs();
     _checkNetworkStatus();
     super.initState();
   }
@@ -38,9 +55,8 @@ class _ActualPageState extends State<ActualPage> {
           preferredSize: Size.fromHeight(0.0),
           child: AppBar(backgroundColor: Colors.black)),
       body: _networkStatus
-          ? WebviewScaffold(
-              url:
-                  "https://imhd.sk/ba/online-zastavkova-tabula?skin=0&fullscreen=0",
+          ? _isLoading ? CircularProgressIndicator() :WebviewScaffold(
+              url:url,
               geolocationEnabled: true,
             )
           : Center(
