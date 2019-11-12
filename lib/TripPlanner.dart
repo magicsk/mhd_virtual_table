@@ -68,7 +68,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
 
   Future<String> getDirection() async {
     var jsonUrl =
-        'https://maps.googleapis.com/maps/api/directions/json?key=AIzaSyCkGBN4ws8vyc8jlLtgFj5yTPUdDzPCeMY&mode=transit&origin=' +
+        'https://maps.googleapis.com/maps/api/directions/json?key=API_KEY&mode=transit&origin=' +
             _fromTextController.value.text.toString() +
             ',Bratislava&destination=' +
             _toTextController.value.text.toString() +
