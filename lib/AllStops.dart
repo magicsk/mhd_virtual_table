@@ -223,7 +223,7 @@ class _AllStopsState extends State<AllStopsPage> {
               onPressed: () {
                 var text = "";
                 this.setState(() {
-                  _textController.clear();
+                  WidgetsBinding.instance.addPostFrameCallback((_) => _textController.clear());
                   _stopsForDisplay = stops.where((stop) {
                     var stopName = removeDiacritics(stop.name).toLowerCase();
                     return stopName.contains(text);
