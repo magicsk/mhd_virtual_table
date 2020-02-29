@@ -22,6 +22,7 @@ import 'widgets/stopList.dart';
 import 'locale/locales.dart';
 
 void main() async {
+  await WidgetsFlutterBinding.ensureInitialized();
   await PrefService.init(prefix: 'pref_');
   runApp(AlertProvider(
     child: MyApp(),
@@ -40,6 +41,7 @@ final _model = ThemeModel(
     accentColor: Colors.red,
     toggleableActiveColor: Colors.red,
     buttonColor: Colors.red,
+    
   ),
   customDarkTheme: ThemeData(
     primaryColor: primaryColor,
@@ -105,7 +107,7 @@ class MyAppState extends State<MyAppPage> {
   String nearStopsFileName = 'nearStops.json';
   File stopsFile;
   File nearStopsFile;
-  int tableThemeInt;
+  int tableThemeInt = 1;
   bool _isLoading = false;
   bool _gotPermission = false;
   bool _networkStatus = false;
