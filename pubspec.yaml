@@ -1,6 +1,6 @@
 name: mhd_virtual_table
 description: App with list of virtual tables for MHD in Bratislava.
-version: 0.9.9
+version: 1.0.0
 authors: 
 - magicsk.eu <support@magicsk.eu>
 
@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: ^0.15.1
+  intl: ^0.16.0
   flutter_webview_plugin: ^0.3.7
   webview_flutter: ^0.3.9+1
   permission_handler: '^3.1.0'
@@ -28,13 +28,14 @@ dependencies:
   provider: ^3.0.0+1
   scoped_model: ^1.0.1
   preferences: ^4.0.0
-  firebase_core: ^0.4.0+9
-  firebase_analytics: ^5.0.2
+#  firebase_core: ^0.4.0+9
+#  firebase_analytics: ^5.0.2
   cupertino_icons: ^0.1.2
   flutter_cupertino_localizations: ^1.0.1
   flutter_typeahead: ^1.7.0
   loading_overlay: ^0.2.0
   native_color: ^1.0.0
+  animated_list_view: ^0.1.1
 
 dev_dependencies:
   flutter_test:
