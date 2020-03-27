@@ -176,7 +176,6 @@ class _TripPlannerState extends State<TripPlannerPage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text('Trip planner'),
-        backgroundColor: primaryColor,
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.more_vert),
@@ -191,7 +190,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
           )
         ],
         bottom: PreferredSize(
-          preferredSize: Size.fromHeight(188.0),
+          preferredSize: Size.fromHeight(186.0),
           child: _inputBar(),
         ),
       ),
@@ -201,7 +200,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
               child: Column(
               children: <Widget>[
                 Padding(padding: EdgeInsets.all(40.0),),
-                Icon(Icons.search, size: 200.0, color: Colors.grey[300]),
+                Icon(Icons.search, size: 150.0, color: Colors.grey[300]),
                 Text("Plan your journy via public transport!",
                     style: TextStyle(color: Colors.grey[500]))
               ],
@@ -270,7 +269,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
                                           : "Train",
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 16.0,
+                                          fontSize: 20.0,
                                           color: Colors.white))),
                             ),
                           ),
@@ -347,7 +346,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
   _inputBar() {
     return Padding(
         padding: const EdgeInsets.only(
-            bottom: 20.0, left: 15.0, right: 15.0, top: 0.0),
+            bottom: 5.0, left: 15.0, right: 15.0, top: 0.0),
         child: Column(
           children: <Widget>[
             Row(
@@ -494,10 +493,12 @@ class _TripPlannerState extends State<TripPlannerPage> {
                 child: Row(
                   children: <Widget>[
                     Flexible(
-                      child: Row(
+                      child: Column(
+
                         children: <Widget>[
                           FlatButton(
                             padding: EdgeInsets.all(0),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             onPressed: () {
                               setState(() {
                                 arrivalDeparature = false;
@@ -523,6 +524,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
                           ),
                           FlatButton(
                             padding: EdgeInsets.all(0),
+                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                             onPressed: () {
                               setState(() {
                                 arrivalDeparature = true;
