@@ -30,6 +30,7 @@ class _NearMeState extends State<NearMePage> {
   bool _locationStatus = false;
   bool _networkStatus = false;
   bool _restricted = false;
+  bool _error = false;
   int tableThemeInt;
 
   _getprefs() async {
@@ -112,13 +113,13 @@ class _NearMeState extends State<NearMePage> {
             nearStops.addAll(_nearStopsFile);
             print('nearStops loaded');
             _getprefs().then((permission) {
-                _checkLocationStatus().then((status) {
-                  setState(() {
-                    _locationStatus = status;
-                    _gotPermission = permission;
-                    _isLoading = false;
-                  });
+              _checkLocationStatus().then((status) {
+                setState(() {
+                  _locationStatus = status;
+                  _gotPermission = permission;
+                  _isLoading = false;
                 });
+              });
             });
           }
         });
@@ -133,20 +134,31 @@ class _NearMeState extends State<NearMePage> {
               });
               if (status) {
                 fetchNearStops().then((value) {
-                  setState(() {
-                    nearStops.clear();
-                    nearStops.addAll(value);
-                    _isLoadingNew = false;
+                  print(value.length);
+                  if (value.length == 0) {
+                    print('Unable to fetch!');
+                    setState(() { 
+                    _error = true;
                     _isLoading = false;
-                    getApplicationDocumentsDirectory()
-                        .then((Directory directory) {
-                      File file =
-                          new File(directory.path + "/" + nearStopsFileName);
-                      file.createSync();
-                      file.writeAsStringSync(json.encode(nearStops));
-                      print('nearStops saved');
+                    _isLoadingNew = false;
                     });
-                  });
+                  } else {
+                    setState(() {
+                      nearStops.clear();
+                      nearStops.addAll(value);
+                      _error = false;
+                      _isLoadingNew = false;
+                      _isLoading = false;
+                      getApplicationDocumentsDirectory()
+                          .then((Directory directory) {
+                        File file =
+                            new File(directory.path + "/" + nearStopsFileName);
+                        file.createSync();
+                        file.writeAsStringSync(json.encode(nearStops));
+                        print('nearStops saved');
+                      });
+                    });
+                  }
                 });
               } else {
                 setState(() {
@@ -213,7 +225,7 @@ class _NearMeState extends State<NearMePage> {
                                     currentLocation.latitude.toString() +
                                     '&long=' +
                                     currentLocation.longitude.toString() +
-                                    '&skin=' +  
+                                    '&skin=' +
                                     tableThemeInt.toString();
                                 var response = await http.get(url);
 
@@ -253,25 +265,42 @@ class _NearMeState extends State<NearMePage> {
                   child: _isLoading
                       ? Center()
                       : _locationStatus
-                          ? Scrollbar(
-                              child: ListView.builder(
-                                scrollDirection: Axis.vertical,
-                                itemCount: nearStops.length,
-                                itemBuilder: (context, index) {
-                                  return new FlatButton(
-                                    child: NearStopRow(nearStops[index]),
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          new MaterialPageRoute(
-                                              builder: (context) =>
-                                                  new StopWebView(
-                                                      nearStops[index])));
+                          ? _error
+                              ? Padding(
+                                  padding: EdgeInsets.only(top: 250.0),
+                                  child: Center(
+                                    child: Column(
+                                      children: <Widget>[
+                                        Icon(Icons.warning,
+                                            size: 150.0,
+                                            color: Colors.grey[300]),
+                                        Text(
+                                            'Currently unavailable, try again later!',
+                                            style: TextStyle(
+                                                color: Colors.grey[500]))
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              : Scrollbar(
+                                  child: ListView.builder(
+                                    scrollDirection: Axis.vertical,
+                                    itemCount: nearStops.length,
+                                    itemBuilder: (context, index) {
+                                      return new FlatButton(
+                                        child: NearStopRow(nearStops[index]),
+                                        onPressed: () {
+                                          Navigator.push(
+                                              context,
+                                              new MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      new StopWebView(
+                                                          nearStops[index])));
+                                        },
+                                      );
                                     },
-                                  );
-                                },
-                              ),
-                            )
+                                  ),
+                                )
                           : Padding(
                               padding: EdgeInsets.only(top: 250.0),
                               child: Center(
@@ -280,7 +309,7 @@ class _NearMeState extends State<NearMePage> {
                                       ? <Widget>[
                                           Icon(
                                             Icons.not_interested,
-                                            size: 200.0,
+                                            size: 150.0,
                                             color: Colors.grey[300],
                                           ),
                                           Text(
@@ -292,7 +321,7 @@ class _NearMeState extends State<NearMePage> {
                                       : <Widget>[
                                           Icon(
                                             Icons.location_off,
-                                            size: 200.0,
+                                            size: 150.0,
                                             color: Colors.grey[300],
                                           ),
                                           _gotPermission
@@ -331,7 +360,7 @@ class _NearMeState extends State<NearMePage> {
                     children: <Widget>[
                       Icon(
                         Icons.signal_cellular_off,
-                        size: 200.0,
+                        size: 150.0,
                         color: Colors.grey[300],
                       ),
                       Text(

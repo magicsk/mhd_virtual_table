@@ -22,7 +22,7 @@ import 'widgets/stopList.dart';
 import 'locale/locales.dart';
 
 void main() async {
-  await WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
   await PrefService.init(prefix: 'pref_');
   runApp(AlertProvider(
     child: MyApp(),
@@ -52,7 +52,7 @@ final _model = ThemeModel(
     buttonColor: Colors.red,
   ),
   customBlackTheme: ThemeData(
-    primaryColor: primaryColor, //can be black
+    primaryColor: Colors.black, //can be Colors.grey[90]
     accentColor: Colors.red,
     brightness: Brightness.dark,
     backgroundColor: Colors.black,
