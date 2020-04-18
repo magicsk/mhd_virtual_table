@@ -5,7 +5,7 @@ authors:
 - magicsk.eu <support@magicsk.eu>
 
 environment:
-  sdk: ">=2.2.0 <3.0.0"
+  sdk: ">=2.2.2 <3.0.0"
 
 dependencies:
   flutter:
@@ -48,6 +48,13 @@ dev_dependencies:
 
 # The following section is specific to Flutter.
 flutter:
+  assets:
+    - assets/google/powered_by_google_on_non_white.png
+    - assets/google/2.0x/powered_by_google_on_non_white.png
+    - assets/google/3.0x/powered_by_google_on_non_white.png
+    - assets/google/powered_by_google_on_white.png
+    - assets/google/2.0x/powered_by_google_on_white.png
+    - assets/google/3.0x/powered_by_google_on_white.png
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

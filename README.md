@@ -4,11 +4,15 @@ App with list of virtual tables for MHD in Bratislava.
 
 ## TODO
 
+Main
+- ios version
+
 Add nearme
 
 - cache ✔
 - speed (some way :D) ✔
 - on changed position (maybe) ✘ -> used button refresh ✔
+- own api
 
 Better permission check
 
@@ -30,9 +34,13 @@ Trip planner
 - add time date ✔
 - add margins ✔
 - add swap button maybe ✔
-- add actual position use
+- add actual position use ✔
 - favourites in list ✔
-- gmaps copyright
+- gmaps copyright ✔
+- loading when fetching
+- offline alert
+- favourites
+- multiple APIs
 
 Final tuches
 
@@ -44,3 +52,6 @@ Final tuches
 - add legal notice
 - agree with imhd rights
 - agree with gmaps rights
+- agree with licence
+- cloud save favourites like duckduckgo
+

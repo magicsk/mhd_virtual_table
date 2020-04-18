@@ -11,22 +11,8 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  bool darkTheme = false;
-  bool blackTheme = false;
-  var tableTheme = 'Dark';
-
-  _getprefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      darkTheme = prefs.getBool('darkTheme');
-      blackTheme = prefs.getBool('blackTheme');
-      tableTheme = prefs.getString('tableTheme');
-    });
-  }
-
   @override
   void initState() {
-    _getprefs();
     super.initState();
   }
 

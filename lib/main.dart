@@ -72,6 +72,7 @@ class MyApp extends StatelessWidget {
       builder: (_) => _model..init(),
       child: Consumer<ThemeModel>(builder: (context, model, child) {
         return MaterialApp(
+          debugShowCheckedModeBanner: false,
           theme: model.theme,
           localizationsDelegates: [
             AppLocalizationsDelegate(),
@@ -293,6 +294,7 @@ class MyAppState extends State<MyAppPage> {
       child: Consumer<ThemeModel>(builder: (context, model, child) {
         return _isLoading
             ? MaterialApp(
+              debugShowCheckedModeBanner: false,
                 home: Scaffold(
                   body: Center(
                     child: Icon(
@@ -304,6 +306,7 @@ class MyAppState extends State<MyAppPage> {
                 ),
               )
             : MaterialApp(
+              debugShowCheckedModeBanner: false,
                 theme: model.theme,
                 title: 'MHD Virtual Table',
                 localizationsDelegates: [
