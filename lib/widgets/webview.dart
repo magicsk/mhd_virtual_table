@@ -39,7 +39,7 @@ class StopWebViewState extends State<StopWebView> {
         preferredSize: Size.fromHeight(0.0),
         child: AppBar(backgroundColor: Colors.black),
       ),
-      body: _isLoading ? Scaffold() :  WebView(
+      body: _isLoading ? CircularProgressIndicator() :  WebView(
           initialUrl: url, javascriptMode: JavascriptMode.unrestricted,),
     );
   }

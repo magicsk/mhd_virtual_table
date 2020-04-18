@@ -18,10 +18,10 @@ class _ActualPageState extends State<ActualPage> {
   var url;
 
   _getPrefs() async {
-     SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       tableThemeInt = prefs.getInt('tableThemeInt');
-      url = baseUrl+tableThemeInt.toString();
+      url = baseUrl + tableThemeInt.toString();
       print(url);
       _isLoading = false;
     });
@@ -51,34 +51,31 @@ class _ActualPageState extends State<ActualPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-          preferredSize: Size.fromHeight(0.0),
-          child: AppBar(backgroundColor: Colors.black)),
+      appBar: PreferredSize(preferredSize: Size.fromHeight(0.0), child: AppBar(backgroundColor: Colors.black)),
       body: _networkStatus
-          ? _isLoading ? CircularProgressIndicator() :WebviewScaffold(
-              url:url,
-              geolocationEnabled: true,
-            )
+          ? _isLoading
+              ? CircularProgressIndicator()
+              : WebviewScaffold(
+                  url: url,
+                  geolocationEnabled: true,
+                )
           : Center(
-              child: Padding(
-                padding: EdgeInsets.only(top: 300.0),
-                child: Column(children: <Widget>[
-                  Icon(
-                    Icons.signal_cellular_off,
-                    size: 200.0,
-                    color: Colors.grey[300],
-                  ),
-                  Text(
-                    AppLocalizations.of(context).noConnectionNearMe,
-                    style: TextStyle(color: Colors.grey[500]),
-                  ),
-                  RaisedButton(
-                      child: Text(AppLocalizations.of(context).retryBtn),
-                      onPressed: () {
-                        _checkNetworkStatus();
-                      }),
-                ]),
-              ),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.center, children: <Widget>[
+                Icon(
+                  Icons.signal_cellular_off,
+                  size: 150.0,
+                  color: Colors.grey[300],
+                ),
+                Text(
+                  AppLocalizations.of(context).noConnectionNearMe,
+                  style: TextStyle(color: Colors.grey[500]),
+                ),
+                RaisedButton(
+                    child: Text(AppLocalizations.of(context).retryBtn),
+                    onPressed: () {
+                      _checkNetworkStatus();
+                    }),
+              ]),
             ),
     );
   }

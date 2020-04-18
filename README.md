@@ -37,8 +37,8 @@ Trip planner
 - add actual position use ✔
 - favourites in list ✔
 - gmaps copyright ✔
-- loading when fetching
-- offline alert
+- loading when fetching ✔
+- offline alert ✔
 - favourites
 - multiple APIs
 
