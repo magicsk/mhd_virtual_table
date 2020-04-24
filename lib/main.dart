@@ -116,10 +116,15 @@ class MyAppState extends State<MyAppPage> {
 
   _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
       tableThemeInt = prefs.getInt('tableThemeInt');
       legalAgreed = prefs.getBool('legalAgreed');
-    });
+      if (legalAgreed == null) {
+        prefs.setBool('legalAgreed', false);
+        await _getPrefs();
+      } else if ( tableThemeInt == null){
+        prefs.setInt('tableThemeInt', 1);
+        await _getPrefs();
+      }
   }
 
   _checkNetworkStatus() async {
@@ -240,7 +245,7 @@ class MyAppState extends State<MyAppPage> {
 
   @override
   void initState() {
-    _getPrefs().then(() => {
+    _getPrefs().then((prefs) {
       if (!legalAgreed) {
         setState(() {
           AlertDialog(
@@ -248,8 +253,8 @@ class MyAppState extends State<MyAppPage> {
             content: Text('Terms of service'),
             
           );
-        }),
-      },
+        });
+      }
     });
     _checkNetworkStatus().then((status) {
       if (status) {
@@ -290,6 +295,8 @@ class MyAppState extends State<MyAppPage> {
     super.initState();
   }
 
+  
+
   int _selectedPage = 2;
   final _pageOptions = [
     TripPlannerPage(),
@@ -298,8 +305,10 @@ class MyAppState extends State<MyAppPage> {
     AllStopsPage(),
   ];
   @override
+    
   Widget build(BuildContext context) {
     final _theme = Provider.of<ThemeModel>(context);
+    _theme.checkPlatformBrightness(context);
     Locale myLocale = Localizations.localeOf(context);
     return ListenableProvider<ThemeModel>(
       builder: (_) => _model..init(),

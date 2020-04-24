@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:preferences/preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:persist_theme/persist_theme.dart';
-import 'package:preferences/preferences.dart';
 
 import 'package:mhd_virtual_table/locale/locales.dart';
 
@@ -24,6 +25,7 @@ class _SettingsState extends State<Settings> {
       ),
       body: Column(
         children: <Widget>[
+          AutoModeSwitch(),
           DarkModeSwitch(),
           TrueBlackSwitch(),
           DropdownPreference(
