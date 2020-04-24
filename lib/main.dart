@@ -109,6 +109,7 @@ class MyAppState extends State<MyAppPage> {
   File stopsFile;
   File nearStopsFile;
   int tableThemeInt = 1;
+  bool legalAgreed = false;
   bool _isLoading = false;
   bool _gotPermission = false;
   bool _networkStatus = false;
@@ -117,6 +118,7 @@ class MyAppState extends State<MyAppPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       tableThemeInt = prefs.getInt('tableThemeInt');
+      legalAgreed = prefs.getBool('legalAgreed');
     });
   }
 
@@ -238,7 +240,17 @@ class MyAppState extends State<MyAppPage> {
 
   @override
   void initState() {
-    _getPrefs();
+    _getPrefs().then(() => {
+      if (!legalAgreed) {
+        setState(() {
+          AlertDialog(
+            title: Text('Legal agreedment'),
+            content: Text('Terms of service'),
+            
+          );
+        }),
+      },
+    });
     _checkNetworkStatus().then((status) {
       if (status) {
         _checkPermisson().then((permission) {
