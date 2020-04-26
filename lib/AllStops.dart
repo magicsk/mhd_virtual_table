@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:io';
 
-import 'widgets/webview.dart';
+import 'widgets/stopwebview.dart';
 import 'widgets/stopList.dart';
 import 'widgets/settings.dart';
 import 'locale/locales.dart';

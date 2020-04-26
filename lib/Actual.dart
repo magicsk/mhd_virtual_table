@@ -56,7 +56,7 @@ class _ActualPageState extends State<ActualPage> {
           ? _isLoading
               ? CircularProgressIndicator()
               : WebviewScaffold(
-                  url: url,
+                  url: tableThemeInt == 3 ? Theme.of(context).brightness == Brightness.dark ? (baseUrl + "0") : (baseUrl + "1"): url,
                   geolocationEnabled: true,
                 )
           : Center(

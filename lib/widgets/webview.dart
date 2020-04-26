@@ -1,46 +1,63 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_webview_plugin/flutter_webview_plugin.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import 'stopList.dart';
-
-class StopWebView extends StatefulWidget {
-  final Stop stop;
-  StopWebView(this.stop);
+class BasicWebView extends StatefulWidget {
+  final url;
+  BasicWebView(this.url);
   @override
-  StopWebViewState createState() => StopWebViewState(stop);
+  BasicWebViewState createState() => BasicWebViewState(url);
 }
 
-class StopWebViewState extends State<StopWebView> {
-  int tableThemeInt;
-  bool _isLoading = true;
+class BasicWebViewState extends State<BasicWebView> {
   var url;
-
-  _getPrefs() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      tableThemeInt = prefs.getInt('tableThemeInt');
-      url = stop.url+tableThemeInt.toString();
-      print(url);
-      _isLoading = false;
-    });
-  }
+  var actualUrl;
+  var webviewTitle;
+  final flutterWebviewPlugin = new FlutterWebviewPlugin();
 
   @override
-  void initState() {
-    _getPrefs();
+  initState() {
+    flutterWebviewPlugin.onUrlChanged.listen((url) async {
+      webviewTitle = await flutterWebviewPlugin.evalJavascript('window.document.title');
+      actualUrl = await flutterWebviewPlugin.evalJavascript('window.document.URL');
+      webviewTitle = jsonDecode(webviewTitle);
+      actualUrl = jsonDecode(actualUrl);
+      setState(() => {});
+    });
     super.initState();
   }
-  final Stop stop;
-  StopWebViewState(this.stop);
+
+  BasicWebViewState(this.url);
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(0.0),
-        child: AppBar(backgroundColor: Colors.black),
+    return WebviewScaffold(
+      appBar: AppBar(
+        title: webviewTitle != null
+            ? Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    webviewTitle,
+                    style: TextStyle(fontSize: 16.0),
+                  ),
+                  Text(
+                    url,
+                    style: TextStyle(fontSize: 8.0),
+                  )
+                ],
+              )
+            : Text(
+                url,
+                style: TextStyle(fontSize: 10.0),
+              ),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.exit_to_app), onPressed: (() => launch(actualUrl)))
+        ],
       ),
-      body: _isLoading ? CircularProgressIndicator() :  WebView(
-          initialUrl: url, javascriptMode: JavascriptMode.unrestricted,),
+      url: url,
+      withJavascript: true,
     );
   }
 }

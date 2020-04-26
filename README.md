@@ -49,9 +49,8 @@ Final tuches
 - add sk locatization ✔
 - add skin changing ✔
 - add some animations
-- add legal notice
-- agree with imhd rights
-- agree with gmaps rights
-- agree with licence
+- add legal notice ✔
+- agree with gmaps rights ✔
+- agree with licence ✔
 - cloud save favourites like duckduckgo
 

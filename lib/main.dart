@@ -1,5 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:mhd_virtual_table/widgets/webview.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:persist_theme/persist_theme.dart';
@@ -11,6 +14,7 @@ import 'package:easy_alert/easy_alert.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:preferences/preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -22,6 +26,7 @@ import 'widgets/stopList.dart';
 import 'locale/locales.dart';
 
 void main() async {
+  await DotEnv().load('.env');
   WidgetsFlutterBinding.ensureInitialized();
   await PrefService.init(prefix: 'pref_');
   runApp(AlertProvider(
@@ -41,7 +46,6 @@ final _model = ThemeModel(
     accentColor: Colors.red,
     toggleableActiveColor: Colors.red,
     buttonColor: Colors.red,
-    
   ),
   customDarkTheme: ThemeData(
     primaryColor: primaryColor,
@@ -108,7 +112,7 @@ class MyAppState extends State<MyAppPage> {
   String nearStopsFileName = 'nearStops.json';
   File stopsFile;
   File nearStopsFile;
-  int tableThemeInt = 1;
+  int tableThemeInt = 3;
   bool legalAgreed = false;
   bool _isLoading = false;
   bool _gotPermission = false;
@@ -116,24 +120,19 @@ class MyAppState extends State<MyAppPage> {
 
   _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-      tableThemeInt = prefs.getInt('tableThemeInt');
-      legalAgreed = prefs.getBool('legalAgreed');
-      if (legalAgreed == null) {
-        prefs.setBool('legalAgreed', false);
-        await _getPrefs();
-      } else if ( tableThemeInt == null){
-        prefs.setInt('tableThemeInt', 1);
-        await _getPrefs();
-      }
+    tableThemeInt = prefs.getInt('tableThemeInt');
+    legalAgreed = prefs.getBool('legalAgreed');
+    if (tableThemeInt == null) {
+      prefs.setInt('tableThemeInt', 3);
+      await _getPrefs();
+    }
   }
 
   _checkNetworkStatus() async {
     await (Connectivity().checkConnectivity()).then((status) {
       if (status == ConnectivityResult.none) {
         _networkStatus = false;
-        Alert.alert(context,
-            title: "Offline",
-            content: AppLocalizations.of(context).offlineDesc);
+        Alert.alert(context, title: "Offline", content: AppLocalizations.of(context).offlineDesc);
       } else {
         _networkStatus = true;
       }
@@ -142,11 +141,8 @@ class MyAppState extends State<MyAppPage> {
   }
 
   _checkPermisson() async {
-    await PermissionHandler()
-        .requestPermissions([PermissionGroup.locationWhenInUse]);
-    await PermissionHandler()
-        .checkPermissionStatus(PermissionGroup.locationWhenInUse)
-        .then((status) async {
+    await PermissionHandler().requestPermissions([PermissionGroup.locationWhenInUse]);
+    await PermissionHandler().checkPermissionStatus(PermissionGroup.locationWhenInUse).then((status) async {
       if (status == PermissionStatus.granted) {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setBool('_gotPermission', true);
@@ -156,16 +152,11 @@ class MyAppState extends State<MyAppPage> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setBool('_gotPermission', false);
           _gotPermission = false;
-          Alert.alert(context,
-              title: AppLocalizations.of(context).attention,
-              content: AppLocalizations.of(context).attentionDesc);
+          Alert.alert(context, title: AppLocalizations.of(context).attention, content: AppLocalizations.of(context).attentionDesc);
         });
         print('restricted');
       } else if (status == PermissionStatus.unknown) {
-        Alert.confirm(context,
-                title: AppLocalizations.of(context).unknown,
-                content: AppLocalizations.of(context).unknownDesc)
-            .then((int ret) async {
+        Alert.confirm(context, title: AppLocalizations.of(context).unknown, content: AppLocalizations.of(context).unknownDesc).then((int ret) async {
           if (ret == Alert.OK) {
             SharedPreferences prefs = await SharedPreferences.getInstance();
             await prefs.setBool('_gotPermission', true);
@@ -181,10 +172,7 @@ class MyAppState extends State<MyAppPage> {
         await prefs.setBool('_gotPermission', true);
         _gotPermission = true;
       } else {
-        Alert.confirm(context,
-                title: AppLocalizations.of(context).denied,
-                content: AppLocalizations.of(context).deniedDesc)
-            .then((int ret) async {
+        Alert.confirm(context, title: AppLocalizations.of(context).denied, content: AppLocalizations.of(context).deniedDesc).then((int ret) async {
           if (ret == Alert.OK) {
             PermissionHandler().openAppSettings();
             SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -219,8 +207,7 @@ class MyAppState extends State<MyAppPage> {
   Future<List<Stop>> fetchNearStops() async {
     var currentLocation;
     try {
-      currentLocation = await geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.low);
+      currentLocation = await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
     } catch (e) {
       currentLocation = null;
     }
@@ -243,19 +230,131 @@ class MyAppState extends State<MyAppPage> {
     return _nearStops;
   }
 
+  _legalAlert() {
+    if (legalAgreed == null || !legalAgreed) {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return WillPopScope(
+            onWillPop: () async { exit(0); return false;},
+            child: AlertDialog(
+              backgroundColor: Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.grey[800],
+              title: Text('Terms of Use and Privacy Policy'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  RichText(
+                      textAlign: TextAlign.justify,
+                      text: TextSpan(children: <TextSpan>[
+                        TextSpan(text: 'MHD Virtual Table is provided under this ', style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                        TextSpan(
+                            text: 'License',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                    context,
+                                    new MaterialPageRoute(
+                                        builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
+                              }),
+                        TextSpan(
+                            text:
+                                ' on an "as is" basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this ',
+                            style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                        TextSpan(
+                            text: 'License',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                    context,
+                                    new MaterialPageRoute(
+                                        builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
+                              }),
+                        TextSpan(
+                            text: '. No use of any Covered Software is authorized under this ',
+                            style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                        TextSpan(
+                            text: 'License',
+                            style: TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Navigator.push(
+                                    context,
+                                    new MaterialPageRoute(
+                                        builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
+                              }),
+                        TextSpan(text: ' except under this disclaimer.', style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                      ])),
+                  RichText(text: TextSpan(text: '')),
+                  RichText(
+                    textAlign: TextAlign.justify,
+                    text: TextSpan(children: <TextSpan>[
+                      TextSpan(
+                          text: 'MHD Virtual Table is also using Google services. By using it you agree with ',
+                          style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                      TextSpan(
+                          text: 'Google’s Terms of Service',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.push(context, new MaterialPageRoute(builder: (context) => new BasicWebView('https://policies.google.com/terms')));
+                            }),
+                      TextSpan(text: ' and ', style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                      TextSpan(
+                          text: 'Google Privacy Policy',
+                          style: TextStyle(
+                            color: Colors.blue,
+                            decoration: TextDecoration.underline,
+                          ),
+                          recognizer: TapGestureRecognizer()
+                            ..onTap = () {
+                              Navigator.push(context, new MaterialPageRoute(builder: (context) => new BasicWebView('https://policies.google.com/privacy')));
+                            }),
+                      TextSpan(text: '.'),
+                    ]),
+                  )
+                ],
+              ),
+              actions: <Widget>[
+                FlatButton(
+                  onPressed: () {
+                    legalAgreed = true;
+                    SharedPreferences.getInstance().then((prefs) => prefs.setBool("legalAgreed", true));
+                    Navigator.pop(context);
+                  },
+                  child: Text('Accept'),
+                ),
+                FlatButton(
+                  onPressed: () {
+                    exit(0);
+                  },
+                  child: Text('Decline'),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+  }
+
   @override
   void initState() {
-    _getPrefs().then((prefs) {
-      if (!legalAgreed) {
-        setState(() {
-          AlertDialog(
-            title: Text('Legal agreedment'),
-            content: Text('Terms of service'),
-            
-          );
-        });
-      }
-    });
+    _getPrefs().then((prefs) => _legalAlert());
     _checkNetworkStatus().then((status) {
       if (status) {
         _checkPermisson().then((permission) {
@@ -276,8 +375,7 @@ class MyAppState extends State<MyAppPage> {
               setState(() {
                 nearStops.addAll(value);
                 getApplicationDocumentsDirectory().then((Directory directory) {
-                  File file =
-                      new File(directory.path + "/" + nearStopsFileName);
+                  File file = new File(directory.path + "/" + nearStopsFileName);
                   file.createSync();
                   file.writeAsStringSync(json.encode(nearStops));
                   print('nearStops saved');
@@ -292,20 +390,19 @@ class MyAppState extends State<MyAppPage> {
         });
       }
     });
+    
     super.initState();
   }
 
-  
-
-  int _selectedPage = 2;
+  int _selectedPage = 3;
   final _pageOptions = [
     TripPlannerPage(),
     NearMePage(),
     ActualPage(),
     AllStopsPage(),
   ];
+
   @override
-    
   Widget build(BuildContext context) {
     final _theme = Provider.of<ThemeModel>(context);
     _theme.checkPlatformBrightness(context);
@@ -315,7 +412,7 @@ class MyAppState extends State<MyAppPage> {
       child: Consumer<ThemeModel>(builder: (context, model, child) {
         return _isLoading
             ? MaterialApp(
-              debugShowCheckedModeBanner: false,
+                debugShowCheckedModeBanner: false,
                 home: Scaffold(
                   body: Center(
                     child: Icon(
@@ -327,7 +424,7 @@ class MyAppState extends State<MyAppPage> {
                 ),
               )
             : MaterialApp(
-              debugShowCheckedModeBanner: false,
+                debugShowCheckedModeBanner: false,
                 theme: model.theme,
                 title: 'MHD Virtual Table',
                 localizationsDelegates: [
@@ -356,22 +453,10 @@ class MyAppState extends State<MyAppPage> {
                       },
                       items: [
                         // add localization
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.transfer_within_a_station),
-                            title:
-                                Text('Trip planner')),
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.near_me),
-                            title:
-                                Text(AppLocalizations.of(context).nearMeNav)),
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.my_location),
-                            title:
-                                Text(AppLocalizations.of(context).actualNav)),
-                        BottomNavigationBarItem(
-                            icon: Icon(Icons.dashboard),
-                            title:
-                                Text(AppLocalizations.of(context).allstopsNav)),
+                        BottomNavigationBarItem(icon: Icon(Icons.transfer_within_a_station), title: Text('Trip planner')),
+                        BottomNavigationBarItem(icon: Icon(Icons.near_me), title: Text(AppLocalizations.of(context).nearMeNav)),
+                        BottomNavigationBarItem(icon: Icon(Icons.my_location), title: Text(AppLocalizations.of(context).actualNav)),
+                        BottomNavigationBarItem(icon: Icon(Icons.dashboard), title: Text(AppLocalizations.of(context).allstopsNav)),
                       ]),
                 ),
               );

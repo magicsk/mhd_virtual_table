@@ -31,8 +31,8 @@ class _SettingsState extends State<Settings> {
           DropdownPreference(
             'Table theme',
             'tableTheme',
-            defaultVal: 'Light',
-            values: ['Light', 'Dark', 'Blue'],
+            defaultVal: 'Auto',
+            values: ['Auto', 'Light', 'Dark', 'Blue'],
             onChange: (value) async{
               SharedPreferences prefs = await SharedPreferences.getInstance();
               setState(() {
@@ -46,6 +46,9 @@ class _SettingsState extends State<Settings> {
                     break;
                   case 'Blue':
                     prefs.setInt('tableThemeInt', 2);
+                    break;
+                  case 'Auto':
+                    prefs.setInt('tableThemeInt', 3);
                     break;
                 }
                 print(prefs.getInt('tableThemeInt'));
