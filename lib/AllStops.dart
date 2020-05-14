@@ -33,7 +33,7 @@ class _AllStopsState extends State<AllStopsPage> {
   bool _networkStatus = false;
 
   final ScrollController _scrollController = ScrollController();
-  final TextEditingController _textController = new TextEditingController();
+  final TextEditingController _textController = TextEditingController();
 
   Future<List<Stop>> fetchStops() async {
     var url = 'https://api.magicsk.eu/stops2';
@@ -117,8 +117,7 @@ class _AllStopsState extends State<AllStopsPage> {
               fetchStops().then((value) {
                 setState(() {
                   stops.addAll(value);
-                  getApplicationDocumentsDirectory()
-                      .then((Directory directory) {
+                  getApplicationDocumentsDirectory().then((Directory directory) {
                     File file = new File(directory.path + "/" + stopsFileName);
                     file.createSync();
                     file.writeAsStringSync(json.encode(stops));
@@ -133,9 +132,7 @@ class _AllStopsState extends State<AllStopsPage> {
                     }
                     print('stops cleared');
                     stops.sort((a, b) {
-                      return a.name
-                          .toLowerCase()
-                          .compareTo(b.name.toLowerCase());
+                      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
                     });
                     print('stops sorted');
                     setState(() {
@@ -189,16 +186,14 @@ class _AllStopsState extends State<AllStopsPage> {
           child: _isLoading
               ? CircularProgressIndicator()
               : DraggableScrollbar.semicircle(
+                  backgroundColor: Theme.of(context).backgroundColor,
                   controller: _scrollController,
                   child: ListView.builder(
                     controller: _scrollController,
                     scrollDirection: Axis.vertical,
-                    itemCount:
-                        _savedForDisplay.length + _stopsForDisplay.length,
+                    itemCount: _savedForDisplay.length + _stopsForDisplay.length,
                     itemBuilder: (context, index) {
-                      return index < _savedForDisplay.length
-                          ? _listSavedItem(index)
-                          : _listItem(index);
+                      return index < _savedForDisplay.length ? _listSavedItem(index) : _listItem(index);
                     },
                   ))),
     );
@@ -212,10 +207,8 @@ class _AllStopsState extends State<AllStopsPage> {
             hintText: AppLocalizations.of(context).searchHint,
             contentPadding: EdgeInsets.only(top: 15.0, bottom: 0.0, left: 16.0),
             hintStyle: TextStyle(color: Colors.white70),
-            enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white, width: 1.5)),
-            focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Colors.white, width: 2.0)),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 1.5)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: Colors.white, width: 2.0)),
             suffixIcon: IconButton(
               padding: EdgeInsets.only(top: 10.0),
               icon: Icon(Icons.clear),
@@ -240,10 +233,7 @@ class _AllStopsState extends State<AllStopsPage> {
         controller: _textController,
         cursorColor: Colors.white,
         maxLines: 1,
-        style: TextStyle(
-            fontSize: 20.0,
-            color: Colors.white,
-            decoration: TextDecoration.none),
+        style: TextStyle(fontSize: 20.0, color: Colors.white, decoration: TextDecoration.none),
         onChanged: (text) {
           text = removeDiacritics(text).toLowerCase();
           setState(() {
@@ -265,61 +255,47 @@ class _AllStopsState extends State<AllStopsPage> {
     index = index - _savedForDisplay.length;
     return FlatButton(
         onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => StopWebView(_stopsForDisplay[index])));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_stopsForDisplay[index])));
         },
         child: Column(
           children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Text(
-                        _stopsForDisplay[index].name,
-                        style: TextStyle(
-                            fontSize: 17.5, fontWeight: FontWeight.normal),
-                      ),
+            Padding(
+              padding: const EdgeInsets.only(left:16.0, top: 4.0, bottom: 4.0),
+              child: Flex(
+                direction: Axis.horizontal,              
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Expanded(
+                                      child: Text(
+                      _stopsForDisplay[index].name,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),
                     ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(
-                      top: 4.0, bottom: 4.0, left: 0.0, right: 0.0),
-                  child: IconButton(
+                  ),
+                  IconButton(
                     icon: Icon(Icons.star_border),
-                    color: null,
                     onPressed: () {
                       setState(() {
                         saved.add(_stopsForDisplay[index]);
                         stops.remove(_stopsForDisplay[index]);
                         saved.sort((a, b) {
-                          return a.name
-                              .toLowerCase()
-                              .compareTo(b.name.toLowerCase());
+                          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
                         });
                         var text = _textController.text;
                         _stopsForDisplay = stops.where((stop) {
-                          var stopName =
-                              removeDiacritics(stop.name).toLowerCase();
+                          var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
                         _savedForDisplay = saved.where((stop) {
-                          var stopName =
-                              removeDiacritics(stop.name).toLowerCase();
+                          var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
                         createFile();
                       });
                     },
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
             Divider(
               height: 2.0,
@@ -332,10 +308,7 @@ class _AllStopsState extends State<AllStopsPage> {
   _listSavedItem(index) {
     return FlatButton(
         onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => StopWebView(_savedForDisplay[index])));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_savedForDisplay[index])));
         },
         child: Column(
           children: <Widget>[
@@ -349,15 +322,13 @@ class _AllStopsState extends State<AllStopsPage> {
                       padding: const EdgeInsets.only(left: 16.0),
                       child: Text(
                         _savedForDisplay[index].name,
-                        style: TextStyle(
-                            fontSize: 17.5, fontWeight: FontWeight.normal),
+                        style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),
                       ),
                     ),
                   ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(
-                      top: 4.0, bottom: 4.0, left: 0.0, right: 0.0),
+                  padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 0.0, right: 0.0),
                   child: IconButton(
                     icon: Icon(Icons.star),
                     color: Colors.yellow[800],
@@ -366,19 +337,15 @@ class _AllStopsState extends State<AllStopsPage> {
                         stops.add(_savedForDisplay[index]);
                         saved.remove(_savedForDisplay[index]);
                         stops.sort((a, b) {
-                          return a.name
-                              .toLowerCase()
-                              .compareTo(b.name.toLowerCase());
+                          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
                         });
                         var text = _textController.text;
                         _stopsForDisplay = stops.where((stop) {
-                          var stopName =
-                              removeDiacritics(stop.name).toLowerCase();
+                          var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
                         _savedForDisplay = saved.where((stop) {
-                          var stopName =
-                              removeDiacritics(stop.name).toLowerCase();
+                          var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
                         createFile();

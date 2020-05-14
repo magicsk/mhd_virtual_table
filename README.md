@@ -10,7 +10,7 @@ Main
 Add nearme
 
 - cache ✔
-- speed (some way :D) ✔
+- speed ✔
 - on changed position (maybe) ✘ -> used button refresh ✔
 - own api
 

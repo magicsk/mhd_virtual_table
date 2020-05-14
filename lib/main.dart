@@ -112,7 +112,7 @@ class MyAppState extends State<MyAppPage> {
   String nearStopsFileName = 'nearStops.json';
   File stopsFile;
   File nearStopsFile;
-  int tableThemeInt = 3;
+  String tableTheme = 'auto';
   bool legalAgreed = false;
   bool _isLoading = false;
   bool _gotPermission = false;
@@ -120,10 +120,10 @@ class MyAppState extends State<MyAppPage> {
 
   _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    tableThemeInt = prefs.getInt('tableThemeInt');
+    tableTheme = prefs.getString('tableTheme');
     legalAgreed = prefs.getBool('legalAgreed');
-    if (tableThemeInt == null) {
-      prefs.setInt('tableThemeInt', 3);
+    if (tableTheme == null) {
+      prefs.setString('tableTheme', 'auto');
       await _getPrefs();
     }
   }
@@ -214,9 +214,7 @@ class MyAppState extends State<MyAppPage> {
     var url = 'https://api.magicsk.eu/nearme?lat=' +
         currentLocation.latitude.toString() +
         '&long=' +
-        currentLocation.longitude.toString() +
-        '&skin=' +
-        tableThemeInt.toString();
+        currentLocation.longitude.toString();
     var response = await http.get(url);
 
     var _nearStops = List<Stop>();

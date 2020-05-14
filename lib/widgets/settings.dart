@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:preferences/preferences.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:persist_theme/persist_theme.dart';
 
@@ -12,6 +11,8 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  final TextEditingController cloudPhraseField = TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -24,6 +25,7 @@ class _SettingsState extends State<Settings> {
         title: Text(AppLocalizations.of(context).settingsTitle),
       ),
       body: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           AutoModeSwitch(),
           DarkModeSwitch(),
@@ -33,28 +35,50 @@ class _SettingsState extends State<Settings> {
             'tableTheme',
             defaultVal: 'Auto',
             values: ['Auto', 'Light', 'Dark', 'Blue'],
-            onChange: (value) async{
+            onChange: (value) async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               setState(() {
                 prefs.setString('tableTheme', value);
-                switch (value){
+                switch (value) {
                   case 'Dark':
-                    prefs.setInt('tableThemeInt', 0);
+                    prefs.setString('tableTheme', 'black');
                     break;
                   case 'Light':
-                    prefs.setInt('tableThemeInt', 1);
+                    prefs.setString('tableTheme', 'white');
                     break;
                   case 'Blue':
-                    prefs.setInt('tableThemeInt', 2);
+                    prefs.setString('tableTheme', 'blue');
                     break;
                   case 'Auto':
-                    prefs.setInt('tableThemeInt', 3);
+                    prefs.setString('tableTheme', 'auto');
                     break;
                 }
-                print(prefs.getInt('tableThemeInt'));
+                print(prefs.getString('tableTheme'));
               });
             },
           ),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.only(left:16.0, top: 8.0),
+            child: Text('Anonymous cloud save(WIP)',style: TextStyle(fontSize: 16.0)),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left:16.0, right:16.0, bottom: 10.0),
+            child: TextField(
+              controller: cloudPhraseField,
+              decoration: InputDecoration(
+                hintStyle: TextStyle(fontSize: 14.0),hintText: 'Work in progress',contentPadding: EdgeInsets.all(15.0)),
+            ),
+          ),
+          Flex(
+            direction: Axis.horizontal,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: <Widget>[
+              RaisedButton(child: Text('Load settings'), onPressed: null),
+              RaisedButton( child: Text('Save settings'), onPressed: null),
+            ],
+          )
         ],
       ),
     );

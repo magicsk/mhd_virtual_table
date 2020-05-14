@@ -222,7 +222,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
         title: Text('Trip planner'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.more_vert),
+            icon: Icon(Icons.settings),
             onPressed: () {
               Navigator.push(
                 context,

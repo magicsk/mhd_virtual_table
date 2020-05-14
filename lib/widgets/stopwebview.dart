@@ -12,15 +12,15 @@ class StopWebView extends StatefulWidget {
 }
 
 class StopWebViewState extends State<StopWebView> {
-  int tableThemeInt;
+  String tableTheme;
   bool _isLoading = true;
   var url;
 
   _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      tableThemeInt = prefs.getInt('tableThemeInt');
-      url = stop.url + tableThemeInt.toString();
+      tableTheme = prefs.getString('tableTheme');
+      url = stop.url + tableTheme.toString();
       print(url);
       _isLoading = false;
     });
@@ -43,7 +43,7 @@ class StopWebViewState extends State<StopWebView> {
       body: _isLoading
           ? CircularProgressIndicator()
           : WebView(
-              initialUrl: tableThemeInt == 3 ? Theme.of(context).brightness == Brightness.dark ? (stop.url + "0") : (stop.url + "1"): url,
+              initialUrl: tableTheme == 'auto' ? Theme.of(context).brightness == Brightness.dark ? (stop.url + "black") : (stop.url + "white"): url,
               javascriptMode: JavascriptMode.unrestricted,
             ),
     );

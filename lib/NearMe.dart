@@ -31,12 +31,12 @@ class _NearMeState extends State<NearMePage> {
   bool _networkStatus = false;
   bool _restricted = false;
   bool _error = false;
-  int tableThemeInt;
+  String tableTheme;
 
   _getprefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      tableThemeInt = prefs.getInt('tableThemeInt');
+      tableTheme = prefs.getString('tableTheme');
       _gotPermission = prefs.getBool('_gotPermission');
       print(_gotPermission);
     });
@@ -75,9 +75,7 @@ class _NearMeState extends State<NearMePage> {
     var url = 'https://api.magicsk.eu/nearme?lat=' +
         currentLocation.latitude.toString() +
         '&long=' +
-        currentLocation.longitude.toString() +
-        '&skin=' +
-        tableThemeInt.toString();
+        currentLocation.longitude.toString();
     var response = await http.get(url);
 
     var _nearStops = List<Stop>();
@@ -213,9 +211,7 @@ class _NearMeState extends State<NearMePage> {
                                 var url = 'https://api.magicsk.eu/nearme?lat=' +
                                     currentLocation.latitude.toString() +
                                     '&long=' +
-                                    currentLocation.longitude.toString() +
-                                    '&skin=' +
-                                    tableThemeInt.toString();
+                                    currentLocation.longitude.toString();
                                 var response = await http.get(url);
 
                                 var _nearStops = List<Stop>();

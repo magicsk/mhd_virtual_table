@@ -11,17 +11,17 @@ class ActualPage extends StatefulWidget {
 }
 
 class _ActualPageState extends State<ActualPage> {
-  int tableThemeInt;
+  String tableTheme;
   bool _networkStatus = true;
   bool _isLoading = true;
-  var baseUrl = "https://imhd.sk/ba/online-zastavkova-tabula?fullscreen=0&skin=";
+  var baseUrl = "https://imhd.sk/ba/online-zastavkova-tabula?zoom=100&theme=";
   var url;
 
   _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      tableThemeInt = prefs.getInt('tableThemeInt');
-      url = baseUrl + tableThemeInt.toString();
+      tableTheme = prefs.getString('tableTheme');
+      url = baseUrl + tableTheme;
       print(url);
       _isLoading = false;
     });
@@ -56,7 +56,7 @@ class _ActualPageState extends State<ActualPage> {
           ? _isLoading
               ? CircularProgressIndicator()
               : WebviewScaffold(
-                  url: tableThemeInt == 3 ? Theme.of(context).brightness == Brightness.dark ? (baseUrl + "0") : (baseUrl + "1"): url,
+                  url: tableTheme == 'auto' ? Theme.of(context).brightness == Brightness.dark ? (baseUrl + "black") : (baseUrl + "white"): url,
                   geolocationEnabled: true,
                 )
           : Center(
