@@ -30,10 +30,10 @@ class _TripPlannerState extends State<TripPlannerPage> {
   bool _isSearched = false;
   List<Stop> stops = List<Stop>();
   File stopsFile;
-  File savedFile;
+  File favoritesFile;
   Directory dir;
   String stopsFileName = 'stops.json';
-  String savedFileName = 'saved.json';
+  String favoritesFileName = 'favorites.json';
   String _selectedFromStop;
   String _selectedToStop;
   String _fromHint = "From...";
@@ -41,7 +41,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
   String arrivalDeparatureTime = DateTime.now().millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
   bool arrivalDeparature = false;
   bool stopsExists = false;
-  bool savedExists = false;
+  bool favoritesExists = false;
   bool _typeError = false;
   bool _networkError = false;
   bool _isSearching = false;
@@ -72,21 +72,21 @@ class _TripPlannerState extends State<TripPlannerPage> {
     getApplicationDocumentsDirectory().then((Directory directory) {
       dir = directory;
       stopsFile = new File(dir.path + '/' + stopsFileName);
-      savedFile = new File(dir.path + '/' + savedFileName);
+      favoritesFile = new File(dir.path + '/' + favoritesFileName);
       stopsExists = stopsFile.existsSync();
-      savedExists = savedFile.existsSync();
-      var _saved = List<Stop>();
-      if (savedExists) {
-        print('saved.json exists');
-        var savedFileJson = json.decode((savedFile.readAsStringSync()));
-        for (var saveFileJson in savedFileJson) {
-          _saved.add(Stop.fromJson(saveFileJson));
+      favoritesExists = favoritesFile.existsSync();
+      var _favorites = List<Stop>();
+      if (favoritesExists) {
+        print('favorites.json exists');
+        var favoritesFileJson = json.decode((favoritesFile.readAsStringSync()));
+        for (var saveFileJson in favoritesFileJson) {
+          _favorites.add(Stop.fromJson(saveFileJson));
         }
-        _saved.sort((a, b) {
+        _favorites.sort((a, b) {
           return a.name.toLowerCase().compareTo(b.name.toLowerCase());
         });
-        stops.addAll(_saved);
-        print('saved loaded');
+        stops.addAll(_favorites);
+        print('favorites loaded');
       }
       if (stopsExists) {
         var _stops = List<Stop>();
@@ -98,9 +98,9 @@ class _TripPlannerState extends State<TripPlannerPage> {
           return a.name.toLowerCase().compareTo(b.name.toLowerCase());
         });
         int i, s;
-        for (s = 0; s < _saved.length; s++) {
+        for (s = 0; s < _favorites.length; s++) {
           for (i = 0; i < _stops.length; i++) {
-            if (_saved[s].name == _stops[i].name) {
+            if (_favorites[s].name == _stops[i].name) {
               _stops.remove(_stops[i]);
             }
           }
@@ -393,7 +393,7 @@ class _TripPlannerState extends State<TripPlannerPage> {
             )),
       ),
       title: Container(
-        child: (isItStop(_toTextController.text))
+        child: (!isItStop(_toTextController.text))
             ? Text("Prejdite na zastávku ${_toTextController.text}. (${details["duration"]["text"]})", style: TextStyle(fontSize: 14))
             : Text(
                 last

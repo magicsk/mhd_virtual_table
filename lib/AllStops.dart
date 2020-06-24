@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
@@ -20,15 +22,20 @@ class AllStopsPage extends StatefulWidget {
 class _AllStopsState extends State<AllStopsPage> {
   List<Stop> stops = List<Stop>();
   List<Stop> saved = List<Stop>();
+  List<Stop> favorites = List<Stop>();
   List<Stop> _stopsForDisplay = List<Stop>();
   List<Stop> _savedForDisplay = List<Stop>();
+  List<Stop> _favoritesForDisplay = List<Stop>();
   File stopsFile;
   File savedFile;
+  File favoritesFile;
   Directory dir;
   String stopsFileName = 'stops.json';
   String savedFileName = 'saved.json';
+  String favoritesFileName = 'favorites.json';
   bool stopsExists = false;
   bool savedExists = false;
+  bool favoritesExists = false;
   bool _isLoading = true;
   bool _networkStatus = false;
 
@@ -36,7 +43,7 @@ class _AllStopsState extends State<AllStopsPage> {
   final TextEditingController _textController = TextEditingController();
 
   Future<List<Stop>> fetchStops() async {
-    var url = 'https://api.magicsk.eu/stops2';
+    var url = 'https://api.magicsk.eu/stops';
     var response = await http.get(url);
 
     var _stops = List<Stop>();
@@ -70,18 +77,33 @@ class _AllStopsState extends State<AllStopsPage> {
         savedExists = savedFile.existsSync();
         if (savedExists) {
           print('saved.json exists');
-          var _saved = List<Stop>();
-          var savedFileJson = json.decode((savedFile.readAsStringSync()));
-          for (var saveFileJson in savedFileJson) {
-            _saved.add(Stop.fromJson(saveFileJson));
+          savedFile.delete();
+          print('saved.json deleted');
+        }
+        favoritesFile = new File(dir.path + '/' + favoritesFileName);
+        favoritesExists = favoritesFile.existsSync();
+        if (favoritesExists) {
+          print('favorites.json exists');
+          var _favorites = List<Stop>();
+          var favoritesFileJson = json.decode((favoritesFile.readAsStringSync()));
+          for (var favoritesFileJson in favoritesFileJson) {
+            _favorites.add(Stop.fromJson(favoritesFileJson));
           }
-          saved.addAll(_saved);
-          print('saved loaded');
-          saved.sort((a, b) {
-            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-          });
+          favorites.addAll(_favorites);
+          print('favorites loaded');
+          // favorites.sort((a, b) {
+          //   return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          // });
+          int i, s;
+          for (i = 0; i < favorites.length; i++){
+            for (s = 0; s < stops.length; s++){
+              if (favorites[i].id == stops[s].id) {
+                _favoritesForDisplay.add(stops[s]);
+              }
+            }
+          }
           setState(() {
-            _savedForDisplay = saved;
+            _favoritesForDisplay = favorites;
           });
         }
         stopsFile = new File(dir.path + '/' + stopsFileName);
@@ -95,66 +117,66 @@ class _AllStopsState extends State<AllStopsPage> {
           }
           stops.addAll(_stops);
           int i, s;
-          for (s = 0; s < saved.length; s++) {
-            for (i = 0; i < stops.length; i++) {
-              if (saved[s].name == stops[i].name) {
-                stops.remove(stops[i]);
+          for (i = 0; i < favorites.length; i++) {
+            for (s = 0; s < stops.length; s++) {
+              if (favorites[i].id == stops[s].id) {
+                stops.remove(stops[s]);
               }
             }
           }
           print('stops cleared');
-          stops.sort((a, b) {
-            return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-          });
-          print('stops sorted');
+          // stops.sort((a, b) {
+          //   return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+          // });
+          // print('stops sorted');
           setState(() {
             _stopsForDisplay = stops;
             _isLoading = false;
           });
-        } else {
-          checkNetworkStatus().then((status) {
-            if (status) {
-              fetchStops().then((value) {
-                setState(() {
-                  stops.addAll(value);
-                  getApplicationDocumentsDirectory().then((Directory directory) {
-                    File file = new File(directory.path + "/" + stopsFileName);
-                    file.createSync();
-                    file.writeAsStringSync(json.encode(stops));
-                    print('stops saved');
-                    int i, s;
-                    for (s = 0; s < saved.length; s++) {
-                      for (i = 0; i < stops.length; i++) {
-                        if (saved[s].name == stops[i].name) {
-                          stops.remove(stops[i]);
-                        }
-                      }
+        }
+        checkNetworkStatus().then((status) {
+          if (status) {
+            fetchStops().then((value) {
+              setState(() {
+                stops.removeRange(0, stops.length);
+                stops.addAll(value);
+                int i, s;
+                for (i = 0; i < favorites.length; i++) {
+                  for (s = 0; s < stops.length; s++) {
+                    if (favorites[i].id == stops[s].id) {
+                      stops.remove(stops[s]);
                     }
-                    print('stops cleared');
-                    stops.sort((a, b) {
-                      return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-                    });
-                    print('stops sorted');
-                    setState(() {
-                      _stopsForDisplay = stops;
-                      _isLoading = false;
-                    });
-                  });
+                  }
+                }
+                print('stops cleared');
+                getApplicationDocumentsDirectory().then((Directory dir) {
+                  File file = new File(dir.path + "/" + stopsFileName);
+                  file.createSync();
+                  file.writeAsStringSync(json.encode(stops));
+                  print('stops saved');
+                });
+                // stops.sort((a, b) {
+                //   return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+                // });
+                // print('stops sorted');
+                setState(() {
+                  _stopsForDisplay = stops;
+                  _isLoading = false;
                 });
               });
-            }
-          });
-        }
+            });
+          }
+        });
       });
     });
     super.initState();
   }
 
   File createFile() {
-    File file = new File(dir.path + "/" + savedFileName);
+    File file = File(dir.path + "/" + favoritesFileName);
     file.createSync();
-    file.writeAsStringSync(json.encode(saved));
-    print('saved');
+    file.writeAsStringSync(json.encode(favorites));
+    print('favorites created');
     return file;
   }
 
@@ -191,9 +213,9 @@ class _AllStopsState extends State<AllStopsPage> {
                   child: ListView.builder(
                     controller: _scrollController,
                     scrollDirection: Axis.vertical,
-                    itemCount: _savedForDisplay.length + _stopsForDisplay.length,
+                    itemCount: _favoritesForDisplay.length + _stopsForDisplay.length,
                     itemBuilder: (context, index) {
-                      return index < _savedForDisplay.length ? _listSavedItem(index) : _listItem(index);
+                      return index < _favoritesForDisplay.length ? _listFavoritesItem(index) : _listItem(index);
                     },
                   ))),
     );
@@ -221,7 +243,7 @@ class _AllStopsState extends State<AllStopsPage> {
                     var stopName = removeDiacritics(stop.name).toLowerCase();
                     return stopName.contains(text);
                   }).toList();
-                  _savedForDisplay = saved.where((stop) {
+                  _favoritesForDisplay = favorites.where((stop) {
                     var stopName = removeDiacritics(stop.name).toLowerCase();
                     return stopName.contains(text);
                   }).toList();
@@ -241,7 +263,7 @@ class _AllStopsState extends State<AllStopsPage> {
               var stopName = removeDiacritics(stop.name).toLowerCase();
               return stopName.contains(text);
             }).toList();
-            _savedForDisplay = saved.where((stop) {
+            _favoritesForDisplay = favorites.where((stop) {
               var stopName = removeDiacritics(stop.name).toLowerCase();
               return stopName.contains(text);
             }).toList();
@@ -252,7 +274,7 @@ class _AllStopsState extends State<AllStopsPage> {
   }
 
   _listItem(index) {
-    index = index - _savedForDisplay.length;
+    index = index - _favoritesForDisplay.length;
     return FlatButton(
         onPressed: () {
           Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_stopsForDisplay[index])));
@@ -276,9 +298,9 @@ class _AllStopsState extends State<AllStopsPage> {
                     icon: Icon(Icons.star_border),
                     onPressed: () {
                       setState(() {
-                        saved.add(_stopsForDisplay[index]);
+                        favorites.add(_stopsForDisplay[index]);
                         stops.remove(_stopsForDisplay[index]);
-                        saved.sort((a, b) {
+                        favorites.sort((a, b) {
                           return a.name.toLowerCase().compareTo(b.name.toLowerCase());
                         });
                         var text = _textController.text;
@@ -286,7 +308,7 @@ class _AllStopsState extends State<AllStopsPage> {
                           var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
-                        _savedForDisplay = saved.where((stop) {
+                        _favoritesForDisplay = favorites.where((stop) {
                           var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
@@ -305,10 +327,10 @@ class _AllStopsState extends State<AllStopsPage> {
         ));
   }
 
-  _listSavedItem(index) {
+  _listFavoritesItem(index) {
     return FlatButton(
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_savedForDisplay[index])));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_favoritesForDisplay[index])));
         },
         child: Column(
           children: <Widget>[
@@ -321,7 +343,7 @@ class _AllStopsState extends State<AllStopsPage> {
                     Padding(
                       padding: const EdgeInsets.only(left: 16.0),
                       child: Text(
-                        _savedForDisplay[index].name,
+                        _favoritesForDisplay[index].name,
                         style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),
                       ),
                     ),
@@ -334,8 +356,8 @@ class _AllStopsState extends State<AllStopsPage> {
                     color: Colors.yellow[800],
                     onPressed: () {
                       setState(() {
-                        stops.add(_savedForDisplay[index]);
-                        saved.remove(_savedForDisplay[index]);
+                        stops.add(_favoritesForDisplay[index]);
+                        favorites.remove(_favoritesForDisplay[index]);
                         stops.sort((a, b) {
                           return a.name.toLowerCase().compareTo(b.name.toLowerCase());
                         });
@@ -344,7 +366,7 @@ class _AllStopsState extends State<AllStopsPage> {
                           var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();
-                        _savedForDisplay = saved.where((stop) {
+                        _favoritesForDisplay = favorites.where((stop) {
                           var stopName = removeDiacritics(stop.name).toLowerCase();
                           return stopName.contains(text);
                         }).toList();

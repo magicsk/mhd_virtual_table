@@ -189,20 +189,20 @@ class MyAppState extends State<MyAppPage> {
     return _gotPermission;
   }
 
-  Future<List<Stop>> fetchStops() async {
-    var url = 'https://api.magicsk.eu/stops2';
-    var response = await http.get(url);
+  // Future<List<Stop>> fetchStops() async {
+  //   var url = 'https://api.magicsk.eu/stops';
+  //   var response = await http.get(url);
 
-    var _stops = List<Stop>();
-    print("Fetching: " + url);
-    if (response.statusCode == 200) {
-      var stopsJson = json.decode(utf8.decode(response.bodyBytes));
-      for (var stopJson in stopsJson) {
-        _stops.add(Stop.fromJson(stopJson));
-      }
-    }
-    return _stops;
-  }
+  //   var _stops = List<Stop>();
+  //   print("Fetching: " + url);
+  //   if (response.statusCode == 200) {
+  //     var stopsJson = json.decode(utf8.decode(response.bodyBytes));
+  //     for (var stopJson in stopsJson) {
+  //       _stops.add(Stop.fromJson(stopJson));
+  //     }
+  //   }
+  //   return _stops;
+  // }
 
   Future<List<Stop>> fetchNearStops() async {
     var currentLocation;
@@ -356,18 +356,19 @@ class MyAppState extends State<MyAppPage> {
     _checkNetworkStatus().then((status) {
       if (status) {
         _checkPermisson().then((permission) {
-          fetchStops().then((value) {
-            setState(() {
-              stops.addAll(value);
-              getApplicationDocumentsDirectory().then((Directory directory) {
-                File file = new File(directory.path + "/" + stopsFileName);
-                file.createSync();
-                file.writeAsStringSync(json.encode(stops));
-                print('stops saved');
-                _isLoading = false;
-              });
-            });
-          });
+          // fetchStops().then((value) {
+          //   setState(() {
+          //     stops.removeRange(0, stops.length);
+          //     stops.addAll(value);
+          //     getApplicationDocumentsDirectory().then((Directory directory) {
+          //       File file = new File(directory.path + "/" + stopsFileName);
+          //       file.createSync();
+          //       file.writeAsStringSync(json.encode(stops));
+          //       print('stops saved');
+          //       _isLoading = false;
+          //     });
+          //   });
+          // });
           if (permission) {
             fetchNearStops().then((value) {
               setState(() {

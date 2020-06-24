@@ -5,6 +5,7 @@ App with list of virtual tables for MHD in Bratislava.
 ## TODO
 
 Main
+
 - ios version
 
 Add nearme
@@ -53,4 +54,4 @@ Final tuches
 - agree with gmaps rights ✔
 - agree with licence ✔
 - cloud save favourites like duckduckgo
-
+- rework AllStops favorites ✔
