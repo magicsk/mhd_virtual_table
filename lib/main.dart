@@ -14,7 +14,6 @@ import 'package:easy_alert/easy_alert.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:preferences/preferences.dart';
 import 'package:http/http.dart' as http;
-import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'dart:io';
 
@@ -211,10 +210,7 @@ class MyAppState extends State<MyAppPage> {
     } catch (e) {
       currentLocation = null;
     }
-    var url = 'https://api.magicsk.eu/nearme?lat=' +
-        currentLocation.latitude.toString() +
-        '&long=' +
-        currentLocation.longitude.toString();
+    var url = 'https://api.magicsk.eu/nearme?lat=' + currentLocation.latitude.toString() + '&long=' + currentLocation.longitude.toString();
     var response = await http.get(url);
 
     var _nearStops = List<Stop>();
@@ -235,7 +231,10 @@ class MyAppState extends State<MyAppPage> {
         barrierDismissible: false,
         builder: (BuildContext context) {
           return WillPopScope(
-            onWillPop: () async { exit(0); return false;},
+            onWillPop: () async {
+              exit(0);
+              return false;
+            },
             child: AlertDialog(
               backgroundColor: Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.grey[800],
               title: Text('Terms of Use and Privacy Policy'),
@@ -389,17 +388,42 @@ class MyAppState extends State<MyAppPage> {
         });
       }
     });
-    
+
     super.initState();
   }
 
-  int _selectedPage = 3;
-  final _pageOptions = [
-    TripPlannerPage(),
-    NearMePage(),
-    ActualPage(),
-    AllStopsPage(),
+  final PageStorageBucket bucket = PageStorageBucket();
+  int _selectedIndex = 3;
+
+  final List<Widget> pages = [
+    TripPlannerPage(
+      key: PageStorageKey('TripPlanner'),
+    ),
+    NearMePage(
+      key: PageStorageKey('NearMe'),
+    ),
+    ActualPage(
+      key: PageStorageKey('Actual'),
+    ),
+    AllStopsPage(
+      key: PageStorageKey('AllStops'),
+    ),
   ];
+
+  Widget _bottomNavigationBar(int selectedIndex, ThemeModel model) => BottomNavigationBar(
+          backgroundColor: model.backgroundColor,
+          type: BottomNavigationBarType.fixed,
+          selectedItemColor: primaryColor,
+          // unselectedItemColor: Color(0xFF737373),
+          currentIndex: selectedIndex,
+          onTap: (int index) => setState(() => _selectedIndex = index),
+          items: [
+            // add localization
+            BottomNavigationBarItem(icon: Icon(Icons.transfer_within_a_station), title: Text('Trip planner')),
+            BottomNavigationBarItem(icon: Icon(Icons.near_me), title: Text(AppLocalizations.of(context).nearMeNav)),
+            BottomNavigationBarItem(icon: Icon(Icons.my_location), title: Text(AppLocalizations.of(context).actualNav)),
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard), title: Text(AppLocalizations.of(context).allstopsNav)),
+          ]);
 
   @override
   Widget build(BuildContext context) {
@@ -437,26 +461,9 @@ class MyAppState extends State<MyAppPage> {
                   const Locale('sk', ""), // Slovak
                 ],
                 home: Scaffold(
-                  body: _pageOptions[_selectedPage],
+                  body: pages[_selectedIndex],
                   primary: true,
-                  bottomNavigationBar: BottomNavigationBar(
-                      backgroundColor: model.backgroundColor,
-                      type: BottomNavigationBarType.fixed,
-                      selectedItemColor: primaryColor,
-                      // unselectedItemColor: Color(0xFF737373),
-                      currentIndex: _selectedPage,
-                      onTap: (int index) {
-                        setState(() {
-                          _selectedPage = index;
-                        });
-                      },
-                      items: [
-                        // add localization
-                        BottomNavigationBarItem(icon: Icon(Icons.transfer_within_a_station), title: Text('Trip planner')),
-                        BottomNavigationBarItem(icon: Icon(Icons.near_me), title: Text(AppLocalizations.of(context).nearMeNav)),
-                        BottomNavigationBarItem(icon: Icon(Icons.my_location), title: Text(AppLocalizations.of(context).actualNav)),
-                        BottomNavigationBarItem(icon: Icon(Icons.dashboard), title: Text(AppLocalizations.of(context).allstopsNav)),
-                      ]),
+                  bottomNavigationBar: _bottomNavigationBar(_selectedIndex, model),
                 ),
               );
       }),

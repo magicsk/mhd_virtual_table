@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:diacritic/diacritic.dart';
 import 'package:draggable_scrollbar/draggable_scrollbar.dart';
@@ -15,6 +13,7 @@ import 'widgets/settings.dart';
 import 'locale/locales.dart';
 
 class AllStopsPage extends StatefulWidget {
+  const AllStopsPage({Key key}) : super(key: key);
   @override
   _AllStopsState createState() => _AllStopsState();
 }
@@ -24,7 +23,6 @@ class _AllStopsState extends State<AllStopsPage> {
   List<Stop> saved = List<Stop>();
   List<Stop> favorites = List<Stop>();
   List<Stop> _stopsForDisplay = List<Stop>();
-  List<Stop> _savedForDisplay = List<Stop>();
   List<Stop> _favoritesForDisplay = List<Stop>();
   File stopsFile;
   File savedFile;
@@ -95,8 +93,8 @@ class _AllStopsState extends State<AllStopsPage> {
           //   return a.name.toLowerCase().compareTo(b.name.toLowerCase());
           // });
           int i, s;
-          for (i = 0; i < favorites.length; i++){
-            for (s = 0; s < stops.length; s++){
+          for (i = 0; i < favorites.length; i++) {
+            for (s = 0; s < stops.length; s++) {
               if (favorites[i].id == stops[s].id) {
                 _favoritesForDisplay.add(stops[s]);
               }
@@ -282,13 +280,13 @@ class _AllStopsState extends State<AllStopsPage> {
         child: Column(
           children: <Widget>[
             Padding(
-              padding: const EdgeInsets.only(left:16.0, top: 4.0, bottom: 4.0),
+              padding: const EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
               child: Flex(
-                direction: Axis.horizontal,              
+                direction: Axis.horizontal,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Expanded(
-                                      child: Text(
+                    child: Text(
                       _stopsForDisplay[index].name,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),

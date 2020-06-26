@@ -13,6 +13,7 @@ import 'widgets/stopList.dart';
 import 'locale/locales.dart';
 
 class NearMePage extends StatefulWidget {
+  const NearMePage({Key key}) : super(key: key);
   @override
   _NearMeState createState() => _NearMeState();
 }

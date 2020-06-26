@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'locale/locales.dart';
 
 class ActualPage extends StatefulWidget {
+  const ActualPage({Key key}) : super(key: key);
   @override
   _ActualPageState createState() => _ActualPageState();
 }
