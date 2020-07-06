@@ -37,7 +37,7 @@ class _AllStopsState extends State<AllStopsPage> {
   bool _isLoading = true;
   bool _networkStatus = false;
 
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController scrollController = ScrollController();
   final TextEditingController _textController = TextEditingController();
 
   Future<List<Stop>> fetchStops() async {
@@ -207,9 +207,9 @@ class _AllStopsState extends State<AllStopsPage> {
               ? CircularProgressIndicator()
               : DraggableScrollbar.semicircle(
                   backgroundColor: Theme.of(context).backgroundColor,
-                  controller: _scrollController,
+                  controller: scrollController,
                   child: ListView.builder(
-                    controller: _scrollController,
+                    controller: scrollController,
                     scrollDirection: Axis.vertical,
                     itemCount: _favoritesForDisplay.length + _stopsForDisplay.length,
                     itemBuilder: (context, index) {

@@ -416,7 +416,7 @@ class MyAppState extends State<MyAppPage> {
           selectedItemColor: primaryColor,
           // unselectedItemColor: Color(0xFF737373),
           currentIndex: selectedIndex,
-          onTap: (int index) => setState(() => _selectedIndex = index),
+          onTap: _onTap,
           items: [
             // add localization
             BottomNavigationBarItem(icon: Icon(Icons.transfer_within_a_station), title: Text('Trip planner')),
@@ -424,6 +424,11 @@ class MyAppState extends State<MyAppPage> {
             BottomNavigationBarItem(icon: Icon(Icons.my_location), title: Text(AppLocalizations.of(context).actualNav)),
             BottomNavigationBarItem(icon: Icon(Icons.dashboard), title: Text(AppLocalizations.of(context).allstopsNav)),
           ]);
+
+  void _onTap(int i){
+    setState(() => _selectedIndex = i);
+    
+  }
 
   @override
   Widget build(BuildContext context) {

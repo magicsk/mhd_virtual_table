@@ -23,20 +23,23 @@ import 'widgets/stopList.dart';
 class TripPlannerPage extends StatefulWidget {
   const TripPlannerPage({Key key}) : super(key: key);
   @override
-  checking createState() => checking();
+  TripPlannerState createState() => TripPlannerState();
 }
 
-class checking extends State<TripPlannerPage> {
+class TripPlannerState extends State<TripPlannerPage> {
   bool _isSearched = false;
   List<Stop> stops = List<Stop>();
   List<Trip> favoriteTrips = List<Trip>();
+  List<Trip> recentTrip = List<Trip>();
   File stopsFile;
   File favoritesFile;
   File favoriteTripsFile;
+  File recentTripFile;
   Directory dir;
   String stopsFileName = 'stops.json';
   String favoritesFileName = 'favorites.json';
   String favoriteTripsFileName = 'favoriteTrips.json';
+  String recentTripFileName = 'recentTrip.json';
   String _fromHint = "From...";
   String arrivalDepartureText = '&departure_time=';
   String arrivalDepartureTime = DateTime.now().millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
@@ -44,10 +47,12 @@ class checking extends State<TripPlannerPage> {
   bool stopsExists = false;
   bool favoritesExists = false;
   bool favoriteTripsExists = false;
+  bool recentTripExists = false;
   bool _typeError = false;
   bool _networkError = false;
   bool _isSearching = false;
   bool _favoritesNotEmpty = false;
+  bool _recentNotEmpty = false;
   bool _pickedTime = false;
   bool _used = false;
 
@@ -80,9 +85,11 @@ class checking extends State<TripPlannerPage> {
       stopsFile = File(dir.path + '/' + stopsFileName);
       favoritesFile = File(dir.path + '/' + favoritesFileName);
       favoriteTripsFile = File(dir.path + '/' + favoriteTripsFileName);
+      recentTripFile = File(dir.path + '/' + recentTripFileName);
       stopsExists = stopsFile.existsSync();
       favoritesExists = favoritesFile.existsSync();
       favoriteTripsExists = favoriteTripsFile.existsSync();
+      recentTripExists = recentTripFile.existsSync();
       var _favorites = List<Stop>();
       if (favoritesExists) {
         print('favorites.json exists');
@@ -103,6 +110,17 @@ class checking extends State<TripPlannerPage> {
         favoriteTrips.addAll(_favoriteTrips);
         _favoritesNotEmpty = favoriteTrips.length > 0;
         print('favoriteTrips loaded');
+      }
+      if (recentTripExists) {
+        var _recentTrip = List<Trip>();
+        print('recentTrip.json exists');
+        var recentTripFileJson = json.decode(recentTripFile.readAsStringSync());
+        for (var recentTripFileJson in recentTripFileJson) {
+          _recentTrip.add(Trip.fromJson(recentTripFileJson));
+        }
+        recentTrip.addAll(_recentTrip);
+        _recentNotEmpty = recentTrip.length > 0;
+        print('recentTrip loaded');
       }
       if (stopsExists) {
         var _stops = List<Stop>();
@@ -140,11 +158,11 @@ class checking extends State<TripPlannerPage> {
   }
 
   //save favorites in json
-  File createFile() {
-    File file = File(dir.path + "/" + favoriteTripsFileName);
+  File createFile(trip, tripFileName) {
+    File file = File(dir.path + "/" + tripFileName);
     file.createSync();
-    file.writeAsStringSync(json.encode(favoriteTrips));
-    print('favoriteTrips created');
+    file.writeAsStringSync(json.encode(trip));
+    print('saved');
     return file;
   }
 
@@ -183,6 +201,7 @@ class checking extends State<TripPlannerPage> {
           data = json.decode(response.body)['routes'];
           _isSearched = true;
           _isSearching = false;
+          addToRecent();
         } else {
           _isSearching = false;
           _networkError = true;
@@ -230,7 +249,7 @@ class checking extends State<TripPlannerPage> {
     });
   }
 
-  favoritesTrips() {
+  favoriteTrip() {
     String _from = _fromTextController.value.text.toString();
     String _to = _toTextController.value.text.toString();
     int _time = _pickedTime ? int.parse(arrivalDepartureTime) : 0;
@@ -238,19 +257,30 @@ class checking extends State<TripPlannerPage> {
 
     if (!_used) {
       favoriteTrips.add(_trip);
-      createFile();
+      createFile(favoriteTrips, favoriteTripsFileName);
       isUsed();
     } else {
       for (int _i = 0; _i < favoriteTrips.length; _i++) {
         if (favoriteTrips[_i].from == _trip.from && favoriteTrips[_i].to == _trip.to && favoriteTrips[_i].time == _trip.time) {
           setState(() {
             favoriteTrips.remove(favoriteTrips[_i]);
-            createFile();
+            createFile(favoriteTrips, favoriteTripsFileName);
             isUsed();
           });
         }
       }
     }
+  }
+
+  addToRecent() {
+    String _from = _fromTextController.value.text.toString();
+    String _to = _toTextController.value.text.toString();
+    int _time = int.parse(arrivalDepartureTime);
+    Trip _trip = Trip(_from, _to, _time);
+
+    recentTrip.clear();
+    recentTrip.add(_trip);
+    createFile(recentTrip, recentTripFileName);
   }
 
   // Time and Date picker
@@ -357,7 +387,7 @@ class checking extends State<TripPlannerPage> {
                 Text('Add to Favorites'),
                 IconButton(
                   icon: Icon(_used ? Icons.favorite : Icons.favorite_border),
-                  onPressed: () => favoritesTrips(),
+                  onPressed: () => favoriteTrip(),
                   tooltip: 'save',
                 )
               ],
@@ -720,7 +750,7 @@ class checking extends State<TripPlannerPage> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(top: 15.0),
+          padding: const EdgeInsets.only(top:15.0, bottom:10.0),
           child: Text(
             'Favorites',
             style: TextStyle(fontSize: 20.0),
@@ -736,70 +766,178 @@ class checking extends State<TripPlannerPage> {
               String _to = favoriteTrips[index].to;
               String _time = favoriteTrips[index].time == 0
                   ? TimeOfDay.now().format(context)
-                  : TimeOfDay.fromDateTime(
-                          DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), ''))))
+                  : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString().toString() + '000')))
                       .format(context); // can be NOW
-              return Padding(
-                padding: EdgeInsets.only(top: 10.0, bottom: 0.0),
-                child: Card(
-                  margin: EdgeInsets.all(3.0),
-                  child: InkWell(
-                    onTapDown: _storePosition,
-                    onLongPress: () {
-                      final RenderBox overlay = Overlay.of(context).context.findRenderObject();
-                      showMenu(
-                        items: <PopupMenuEntry>[
-                          PopupMenuItem(
-                            child: InkWell(
-                              radius: 10,
-                              onTap: () {
-                                log('removed');
-                                setState(() {
-                                  favoriteTrips.remove(favoriteTrips[index]);
-                                });
-                                createFile();
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
-                                child: Row(
-                                  children: <Widget>[
-                                    Icon(Icons.delete),
-                                    Text("Delete"),
-                                  ],
+              return Column(
+                children: <Widget>[
+                  _recentNotEmpty
+                      ? index == 0
+                          ? Padding(
+                              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+                              child: Card(
+                                margin: EdgeInsets.all(3.0),
+                                child: InkWell(
+                                  onTapDown: _storePosition,
+                                  onLongPress: () {
+                                    final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+                                    showMenu(
+                                      items: <PopupMenuEntry>[
+                                        PopupMenuItem(
+                                          child: InkWell(
+                                            radius: 10,
+                                            onTap: () {
+                                              log('removed');
+                                              setState(() {
+                                                recentTrip.remove(recentTrip[0]);
+                                              });
+                                              createFile(recentTrip, recentTripFileName);
+                                            },
+                                            child: Padding(
+                                              padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
+                                              child: Row(
+                                                children: <Widget>[
+                                                  Icon(Icons.delete),
+                                                  Text("Delete"),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                      ],
+                                      context: context,
+                                      position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
+                                    );
+                                  },
+                                  onTap: () {
+                                    _fromTextController.text = recentTrip[0].from;
+                                    _toTextController.text = recentTrip[0].to;
+                                    time = recentTrip[0].time == 0
+                                        ? TimeOfDay.now()
+                                        : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')));
+                                    date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                                    arrivalDepartureTime = recentTrip[0].time == 0
+                                        ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
+                                        : recentTrip[0].time.toString();
+                                    _pickedTime = recentTrip[0].time != 0;
+                                    log(_pickedTime.toString());
+                                    getDirection();
+                                  },
+                                  child: Padding(
+                                    padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
+                                    child: Flex(
+                                      direction: Axis.horizontal,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: <Widget>[
+                                        Icon(Icons.access_time),
+                                        Padding(padding: EdgeInsets.all(7.5)),
+                                        Expanded(
+                                          child: Text(
+                                            recentTrip[0].from != "" ? recentTrip[0].from : 'Actual position',
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Text(
+                                          '  >  '
+                                        ),
+                                        Expanded(
+                                          child: Text(
+                                            recentTrip[0].to,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        Text(recentTrip[0].time == 0
+                                            ? TimeOfDay.now().format(context)
+                                            : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')))
+                                                .format(context)), // can be NOW
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          )
-                        ],
-                        context: context,
-                        position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
-                      );
-                    },
-                    onTap: () {
-                      _fromTextController.text = favoriteTrips[index].from;
-                      _toTextController.text = favoriteTrips[index].to;
-                      time = favoriteTrips[index].time == 0
-                          ? TimeOfDay.now()
-                          : TimeOfDay.fromDateTime(
-                              DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), ''))));
-                      date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                      arrivalDepartureTime = favoriteTrips[index].time == 0
-                          ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
-                          : favoriteTrips[index].time.toString();
-                      _pickedTime = favoriteTrips[index].time != 0;
-                      log(_pickedTime.toString());
-                      getDirection();
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
-                      child: Flex(
-                        direction: Axis.horizontal,
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[Text(_from + '  >  ' + _to), Text(_time)],
+                            )
+                          : SizedBox.shrink()
+                      : SizedBox.shrink(),
+                  Padding(
+                    padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
+                    child: Card(
+                      margin: EdgeInsets.all(3.0),
+                      child: InkWell(
+                        onTapDown: _storePosition,
+                        onLongPress: () {
+                          final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+                          showMenu(
+                            items: <PopupMenuEntry>[
+                              PopupMenuItem(
+                                child: InkWell(
+                                  radius: 10,
+                                  onTap: () {
+                                    log('removed');
+                                    setState(() {
+                                      favoriteTrips.remove(favoriteTrips[index]);
+                                    });
+                                    createFile(favoriteTrips, favoriteTripsFileName);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
+                                    child: Row(
+                                      children: <Widget>[
+                                        Icon(Icons.delete),
+                                        Text("Delete"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              )
+                            ],
+                            context: context,
+                            position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
+                          );
+                        },
+                        onTap: () {
+                          _fromTextController.text = favoriteTrips[index].from;
+                          _toTextController.text = favoriteTrips[index].to;
+                          time = favoriteTrips[index].time == 0
+                              ? TimeOfDay.now()
+                              : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString() + '000')));
+                          date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                          arrivalDepartureTime = favoriteTrips[index].time == 0
+                              ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
+                              : favoriteTrips[index].time.toString();
+                          _pickedTime = favoriteTrips[index].time != 0;
+                          log(_pickedTime.toString());
+                          getDirection();
+                        },
+                        child: Padding(
+                          padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
+                          child: Flex(
+                            direction: Axis.horizontal,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: <Widget>[
+                              Icon(Icons.favorite),
+                              Padding(padding: EdgeInsets.all(7.5)),
+                              Expanded(
+                                child: Text(
+                                  _from,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                '  >  '
+                              ),
+                              Expanded(
+                                child: Text(
+                                  _to,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(_time,textAlign: TextAlign.left,)
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               );
             },
           ),
