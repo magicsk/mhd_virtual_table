@@ -14,11 +14,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:native_color/native_color.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'widgets/favoritesList.dart';
-import 'widgets/settings.dart';
 // import 'locale/locales.dart';
 import 'widgets/stopList.dart';
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1)}";
+  }
+}
 
 class TripPlannerPage extends StatefulWidget {
   const TripPlannerPage({Key key}) : super(key: key);
@@ -48,6 +54,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   bool favoritesExists = false;
   bool favoriteTripsExists = false;
   bool recentTripExists = false;
+  bool imhd = false;
   bool _typeError = false;
   bool _networkError = false;
   bool _isSearching = false;
@@ -55,6 +62,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   bool _recentNotEmpty = false;
   bool _pickedTime = false;
   bool _used = false;
+  var detail = false;
 
   List data;
   var currentLocation;
@@ -77,9 +85,22 @@ class TripPlannerState extends State<TripPlannerPage> {
     });
   }
 
+  _getPrefs() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      imhd = prefs.getBool('imhd') == null ? false : prefs.getBool('imhd');
+    });
+  }
+
+  _setPrefs(bool) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setBool('imhd', bool);
+  }
+
   // fetch stops on init
   void initState() {
     DotEnv().load('.env');
+    _getPrefs();
     getApplicationDocumentsDirectory().then((Directory directory) {
       dir = directory;
       stopsFile = File(dir.path + '/' + stopsFileName);
@@ -166,8 +187,13 @@ class TripPlannerState extends State<TripPlannerPage> {
     return file;
   }
 
-  //Get GMaps directions
+  //Source decision
   getDirection() async {
+    imhd ? await getDirectionIMHD() : await getDirectionGoogle();
+  }
+
+  //Get GMaps directions
+  getDirectionGoogle() async {
     if (_toTextController.value.text != '' && _fromTextController.value.text != _toTextController.value.text) {
       setState(() {
         _typeError = false;
@@ -191,6 +217,54 @@ class TripPlannerState extends State<TripPlannerPage> {
           '&destination=' +
           _to +
           ',Bratislava&alternatives=true&region=sk&language=sk';
+      print(jsonUrl);
+      var response = await http.get(Uri.encodeFull(jsonUrl), headers: {"Accept": "application/json"});
+      await isUsed();
+
+      setState(() {
+        // Get the JSON data
+        if (response.statusCode == 200) {
+          data = json.decode(response.body)['routes'];
+          _isSearched = true;
+          _isSearching = false;
+          addToRecent();
+        } else {
+          _isSearching = false;
+          _networkError = true;
+        }
+      });
+    } else {
+      setState(() {
+        _isSearching = false;
+        _typeError = true;
+      });
+    }
+  }
+
+  //Get imhd directions
+  getDirectionIMHD() async {
+    if (_toTextController.value.text != '' && _fromTextController.value.text != _toTextController.value.text) {
+      setState(() {
+        // c48.15,17.1078
+        _typeError = false;
+        _networkError = false;
+        _isSearching = true;
+      });
+
+      String _from = _fromTextController.value.text.toString();
+      String _to = _toTextController.value.text.toString();
+      String _time = _pickedTime ? arrivalDepartureTime : DateTime.now().millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+
+      if (currentLocation != null && _fromTextController.value.text == '') {
+        _from = 'c' + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString();
+      } else if (currentLocation == null && _fromTextController.value.text == '') {
+        var _loc = await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+        setState(() {
+          currentLocation = _loc;
+        });
+        _from = 'c' + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString();
+      }
+      var jsonUrl = 'https://api.magicsk.eu/trip?time=' + arrivalDepartureTime + '000' + '&from=' + _from + '&to=' + _to;
       print(jsonUrl);
       var response = await http.get(Uri.encodeFull(jsonUrl), headers: {"Accept": "application/json"});
       await isUsed();
@@ -325,13 +399,26 @@ class TripPlannerState extends State<TripPlannerPage> {
         title: Text('Trip planner'),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.more_vert),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => Settings(),
-                ),
+              showMenu(
+                context: context,
+                position: RelativeRect.fromLTRB(20, 75, 0, 100),
+                items: <PopupMenuEntry>[
+                  PopupMenuItem(
+                    child: SwitchListTile(
+                      contentPadding: EdgeInsets.all(0),
+                      title: Text('Alternative api'),
+                      value: imhd,
+                      onChanged: (bool) {
+                        setState(() {
+                          imhd = bool;
+                        });
+                        _setPrefs(bool);
+                      },
+                    ),
+                  )
+                ],
               );
             },
           )
@@ -368,7 +455,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Icon(Icons.search, size: 150.0, color: Colors.grey[300]),
-                      Text("Plan your journy via public transport!", style: TextStyle(color: Colors.grey[500]))
+                      Text("Plan your journey via public transport!", style: TextStyle(color: Colors.grey[500]))
                     ],
                   ),
                 ),
@@ -406,8 +493,12 @@ class TripPlannerState extends State<TripPlannerPage> {
                     ? Padding(
                         padding: const EdgeInsets.only(bottom: 10.0),
                         child: Theme.of(context).brightness == Brightness.dark
-                            ? Image(height: 15.0, image: AssetImage('assets/google/powered_by_google_on_non_white.png'))
-                            : Image(height: 15.0, image: AssetImage('assets/google/powered_by_google_on_white.png')),
+                            ? imhd
+                                ? SizedBox.shrink() //TODO imhd logo
+                                : Image(height: 15.0, image: AssetImage('assets/google/powered_by_google_on_non_white.png'))
+                            : imhd
+                                ? SizedBox.shrink() //TODO imhd logo
+                                : Image(height: 15.0, image: AssetImage('assets/google/powered_by_google_on_white.png')),
                       )
                     : Card(
                         child: Column(
@@ -418,46 +509,77 @@ class TripPlannerState extends State<TripPlannerPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: <Widget>[
-                                    Text(data[index]["legs"][0]["duration"]["text"] + " ",
+                                    Text(imhd ? data[index]["duration"] : data[index]["legs"][0]["duration"]["text"] + " ",
                                         style: TextStyle(
-                                          fontSize: 18,
+                                          fontSize: 18.0,
                                         )),
-                                    data[index]["legs"][0]["departure_time"] == null
-                                        ? Text("")
-                                        : Text(
-                                            "( ${data[index]["legs"][0]["departure_time"]["text"]}-${data[index]["legs"][0]["arrival_time"]["text"]})",
-                                            style: TextStyle(fontSize: 13),
-                                          ),
+                                    Text(
+                                      imhd
+                                          ? "  (${data[index]["arrival_departure_time"]})"
+                                          : "  (${data[index]["legs"][0]["departure_time"]["text"]}-${data[index]["legs"][0]["arrival_time"]["text"]})",
+                                      style: TextStyle(fontSize: 12.0, height: 1.8),
+                                    ),
                                   ],
                                 )),
-                            ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: data[index]["legs"][0]["steps"].length,
-                              itemBuilder: (context, stepIndex) {
-                                var details = data[index]["legs"][0]["steps"][stepIndex];
-                                var transitDetails = data[index]["legs"][0]["steps"][stepIndex]["transit_details"];
-                                var travelMode = data[index]["legs"][0]["steps"][stepIndex]["travel_mode"];
-                                if (travelMode == "TRANSIT") {
-                                  return _transitDetail(transitDetails);
-                                } else if (travelMode == "WALKING") {
-                                  if (_fromTextController.text != '' &&
-                                      details["html_instructions"].contains(data[index]["legs"][0]["steps"][1]["transit_details"]["departure_stop"]["name"])) {
-                                    return SizedBox.shrink();
-                                  } else if (data[index]["legs"][0]["steps"].length == stepIndex + 1 && data[index]["legs"][0]["steps"].length != 1) {
-                                    if (data[index]["legs"][0]["steps"][stepIndex - 1]["transit_details"]["arrival_stop"]["name"] == _toTextController.text) {
-                                      return SizedBox.shrink();
-                                    } else {
-                                      return _walkingDetails(details, true, index);
-                                    }
-                                  } else {
-                                    return _walkingDetails(details, false, index);
-                                  }
-                                } else {
-                                  return SizedBox.shrink();
-                                }
-                              },
-                            ),
+                            imhd
+                                ? ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: data[index]["steps"].length,
+                                    itemBuilder: (context, stepIndex) {
+                                      var step = data[index]["steps"][stepIndex];
+                                      var travelMode = data[index]["steps"][stepIndex]["type"];
+                                      if (travelMode == "TRANSIT") {
+                                        return _transitDetail(step);
+                                      } else if (travelMode == "WALKING") {
+                                        return ListTile(
+                                          leading: Padding(
+                                            padding: EdgeInsets.only(bottom: 0.0),
+                                            child: Container(
+                                                width: 45.0,
+                                                height: 30.0,
+                                                child: Icon(
+                                                  Icons.directions_walk,
+                                                  size: 35,
+                                                )),
+                                          ),
+                                          title: Text(step["text"]),
+                                        );
+                                      } else {
+                                        return SizedBox.shrink();
+                                      }
+                                    },
+                                  )
+                                : ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemCount: data[index]["legs"][0]["steps"].length,
+                                    itemBuilder: (context, stepIndex) {
+                                      var details = data[index]["legs"][0]["steps"][stepIndex];
+                                      var transitDetails = data[index]["legs"][0]["steps"][stepIndex]["transit_details"];
+                                      var travelMode = data[index]["legs"][0]["steps"][stepIndex]["travel_mode"];
+                                      if (travelMode == "TRANSIT") {
+                                        return _transitDetail(transitDetails);
+                                      } else if (travelMode == "WALKING") {
+                                        if (_fromTextController.text != '' &&
+                                            details["html_instructions"]
+                                                .contains(data[index]["legs"][0]["steps"][1]["transit_details"]["departure_stop"]["name"])) {
+                                          return SizedBox.shrink();
+                                        } else if (data[index]["legs"][0]["steps"].length == stepIndex + 1 && data[index]["legs"][0]["steps"].length != 1) {
+                                          if (data[index]["legs"][0]["steps"][stepIndex - 1]["transit_details"]["arrival_stop"]["name"] ==
+                                              _toTextController.text) {
+                                            return SizedBox.shrink();
+                                          } else {
+                                            return _walkingDetails(details, true, index);
+                                          }
+                                        } else {
+                                          return _walkingDetails(details, false, index);
+                                        }
+                                      } else {
+                                        return SizedBox.shrink();
+                                      }
+                                    },
+                                  ),
                           ],
                         ),
                       ),
@@ -470,39 +592,87 @@ class TripPlannerState extends State<TripPlannerPage> {
   }
 
   _transitDetail(details) {
-    bool sortname = details["line"]["short_name"] != null;
     String color = details["line"]["color"];
+    var rgbColor = color.split(',').map((n) {
+      return n.replaceAll(RegExp(r"(\D+)"), '');
+    }).toList();
+    int r = int.parse(rgbColor[0]);
+    int g = int.parse(rgbColor[1]);
+    int b = int.parse(rgbColor[2]);
+    var _stops = details["stops"];
+    String lineNumber = imhd ? details["line"]["number"] : details["line"]["short_name"];
+    String departureTime = imhd ? details["departure_time"] : details["departure_time"]["text"];
+    String departureStop = imhd ? details["departure_stop"] : details["departure_stop"]["name"];
+    String arrivalTime = imhd ? details["arrival_time"] : details["arrival_time"]["text"];
+    String arrivalStop = imhd ? details["arrival_stop"] : details["arrival_stop"]["name"];
+    String headsign = imhd ? details["headsign"].toString().toLowerCase().capitalize() : details["headsign"];
+    bool shortName = lineNumber != null;
+
     return ListTile(
       leading: Padding(
         padding: EdgeInsets.only(bottom: 0.0),
         child: Container(
-          decoration: BoxDecoration(color: HexColor(color), borderRadius: BorderRadius.all(Radius.circular(5))),
+          decoration: BoxDecoration(color: imhd ? Color.fromRGBO(r, g, b, 1.0) : HexColor(color), borderRadius: BorderRadius.all(Radius.circular(5))),
           width: 45.0,
           height: 30.0,
-          child: Center(
-              child:
-                  Text(sortname ? details["line"]["short_name"] : "Train", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.white))),
+          child: Center(child: Text(shortName ? lineNumber : "Train", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.white))),
         ),
       ),
       title: Container(
         child: Stack(
           children: <Widget>[
-            Positioned(child: Text("   " + details["headsign"])),
+            Positioned(child: Text("   " + headsign)),
             Positioned(left: -10.0, top: -2.8, child: Icon(Icons.arrow_right)),
           ],
         ),
       ),
       subtitle: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(details["departure_time"]["text"] + " " + details["departure_stop"]["name"]),
-          Text(details["arrival_time"]["text"] + " " + details["arrival_stop"]["name"]),
-          Padding(
-            padding: EdgeInsets.all(5.0),
-          )
+          Text('$departureTime    $departureStop'),
+          Text('$arrivalTime    $arrivalStop'),
         ],
       ),
+      // subtitle: ExpansionTile(
+      //   title: Text('data'),
+      //   children:
+      //    <Widget>[
+      //     ListView.builder(
+      //       shrinkWrap: true,
+      //       physics: NeverScrollableScrollPhysics(),
+      //       itemCount: _stops.length,
+      //       itemBuilder: (context, i) {
+      //         String _stopsTime = _stops[i]["time"];
+      //         String _stopsName = _stops[i]["stop"];
+      //         return Text('$_stopsTime    $_stopsName');
+      //       },
+      //     ),
+      //   ],
+      // ),
+    );
+  }
+
+  _stopsDetail(_stops, departureTime, departureStop, arrivalTime, arrivalStop) {
+    int _count = 1;
+    return InkWell(
+      child: ListView.builder(
+        addAutomaticKeepAlives: true,
+        shrinkWrap: true,
+        physics: NeverScrollableScrollPhysics(),
+        itemCount: _count,
+        itemBuilder: (context, i) {
+          String _stopsTime = _stops[i]["time"];
+          String _stopsName = _stops[i]["stop"];
+          return Text('$_stopsTime    $_stopsName');
+        },
+      ),
+      onTap: () {
+        setState(() {
+          log(_count.toString());
+          _count = 20;
+          log(_count.toString());
+        });
+      },
     );
   }
 
@@ -519,17 +689,15 @@ class TripPlannerState extends State<TripPlannerPage> {
               size: 35,
             )),
       ),
-      title: Container(
-        child: (!isItStop(_toTextController.text))
-            ? Text("Prejdite na zastávku ${_toTextController.text}. (${details["duration"]["text"]})", style: TextStyle(fontSize: 14))
-            : Text(
-                last
-                    ? details["html_instructions"].toString()
-                    : onlyOne
-                        ? details["html_instructions"].toString()
-                        : details["html_instructions"].toString().replaceAll('miesto', 'zastávku') + " (${details["duration"]["text"]})",
-                style: TextStyle(fontSize: 14)),
-      ),
+      title: (!isItStop(_toTextController.text))
+          ? Text("Prejdite na zastávku ${_toTextController.text}. (${details["duration"]["text"]})", style: TextStyle(fontSize: 14))
+          : Text(
+              last
+                  ? details["html_instructions"].toString()
+                  : onlyOne
+                      ? details["html_instructions"].toString()
+                      : details["html_instructions"].toString().replaceAll('miesto', 'zastávku') + " (${details["duration"]["text"]})",
+              style: TextStyle(fontSize: 14)),
     );
   }
 
@@ -750,7 +918,7 @@ class TripPlannerState extends State<TripPlannerPage> {
     return Column(
       children: <Widget>[
         Padding(
-          padding: const EdgeInsets.only(top:15.0, bottom:10.0),
+          padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
           child: Text(
             'Favorites',
             style: TextStyle(fontSize: 20.0),
@@ -783,26 +951,41 @@ class TripPlannerState extends State<TripPlannerPage> {
                                     showMenu(
                                       items: <PopupMenuEntry>[
                                         PopupMenuItem(
-                                          child: InkWell(
-                                            radius: 10,
-                                            onTap: () {
-                                              log('removed');
-                                              setState(() {
-                                                recentTrip.remove(recentTrip[0]);
-                                              });
-                                              createFile(recentTrip, recentTripFileName);
-                                            },
-                                            child: Padding(
-                                              padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
-                                              child: Row(
-                                                children: <Widget>[
-                                                  Icon(Icons.delete),
-                                                  Text("Delete"),
-                                                ],
-                                              ),
-                                            ),
-                                          ),
-                                        )
+                                            child: ListTile(
+                                          onTap: () {
+                                            log('removed');
+                                            setState(() {
+                                              _recentNotEmpty = false;
+                                              recentTrip.remove(recentTrip[0]);
+                                              Navigator.pop(context);
+                                            });
+                                            createFile(recentTrip, recentTripFileName);
+                                          },
+                                          contentPadding: EdgeInsets.all(0),
+                                          title: Icon(Icons.delete),
+                                          trailing: Text('Delete'),
+                                        )),
+                                        // PopupMenuItem(
+                                        //   child: InkWell(
+                                        //     radius: 10,
+                                        //     onTap: () {
+                                        //       log('removed');
+                                        //       setState(() {
+                                        //         recentTrip.remove(recentTrip[0]);
+                                        //       });
+                                        //       createFile(recentTrip, recentTripFileName);
+                                        //     },
+                                        //     child: Padding(
+                                        //       padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
+                                        //       child: Row(
+                                        //         children: <Widget>[
+                                        //           Icon(Icons.delete),
+                                        //           Text("Delete"),
+                                        //         ],
+                                        //       ),
+                                        //     ),
+                                        //   ),
+                                        // )
                                       ],
                                       context: context,
                                       position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
@@ -819,7 +1002,6 @@ class TripPlannerState extends State<TripPlannerPage> {
                                         ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
                                         : recentTrip[0].time.toString();
                                     _pickedTime = recentTrip[0].time != 0;
-                                    log(_pickedTime.toString());
                                     getDirection();
                                   },
                                   child: Padding(
@@ -830,15 +1012,14 @@ class TripPlannerState extends State<TripPlannerPage> {
                                       children: <Widget>[
                                         Icon(Icons.access_time),
                                         Padding(padding: EdgeInsets.all(7.5)),
-                                        Expanded(
+                                        Container(
+                                          constraints: BoxConstraints(maxWidth: 180.0),
                                           child: Text(
                                             recentTrip[0].from != "" ? recentTrip[0].from : 'Actual position',
-                                            overflow: TextOverflow.ellipsis,
+                                            overflow: TextOverflow.clip,
                                           ),
                                         ),
-                                        Text(
-                                          '  >  '
-                                        ),
+                                        Text('  >  '),
                                         Expanded(
                                           child: Text(
                                             recentTrip[0].to,
@@ -904,7 +1085,6 @@ class TripPlannerState extends State<TripPlannerPage> {
                               ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
                               : favoriteTrips[index].time.toString();
                           _pickedTime = favoriteTrips[index].time != 0;
-                          log(_pickedTime.toString());
                           getDirection();
                         },
                         child: Padding(
@@ -915,22 +1095,24 @@ class TripPlannerState extends State<TripPlannerPage> {
                             children: <Widget>[
                               Icon(Icons.favorite),
                               Padding(padding: EdgeInsets.all(7.5)),
-                              Expanded(
+                              Container(
+                                constraints: BoxConstraints(maxWidth: 180.0),
                                 child: Text(
                                   _from,
-                                  overflow: TextOverflow.ellipsis,
+                                  overflow: TextOverflow.clip,
                                 ),
                               ),
-                              Text(
-                                '  >  '
-                              ),
+                              Text('  >  '),
                               Expanded(
                                 child: Text(
                                   _to,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              Text(_time,textAlign: TextAlign.left,)
+                              Text(
+                                _time,
+                                textAlign: TextAlign.left,
+                              )
                             ],
                           ),
                         ),
