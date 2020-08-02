@@ -139,7 +139,7 @@ class MyAppState extends State<MyAppPage> {
     return _networkStatus;
   }
 
-  _checkPermisson() async {
+  _checkPermission() async {
     await PermissionHandler().requestPermissions([PermissionGroup.locationWhenInUse]);
     await PermissionHandler().checkPermissionStatus(PermissionGroup.locationWhenInUse).then((status) async {
       if (status == PermissionStatus.granted) {
@@ -233,7 +233,6 @@ class MyAppState extends State<MyAppPage> {
           return WillPopScope(
             onWillPop: () async {
               exit(0);
-              return false;
             },
             child: AlertDialog(
               backgroundColor: Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.grey[800],
@@ -244,7 +243,7 @@ class MyAppState extends State<MyAppPage> {
                   RichText(
                       textAlign: TextAlign.justify,
                       text: TextSpan(children: <TextSpan>[
-                        TextSpan(text: 'MHD Virtual Table is provided under this ', style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                        TextSpan(text: 'MHD Virtual Table is provided under this ', style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                         TextSpan(
                             text: 'License',
                             style: TextStyle(
@@ -261,7 +260,7 @@ class MyAppState extends State<MyAppPage> {
                         TextSpan(
                             text:
                                 ' on an "as is" basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this ',
-                            style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                            style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                         TextSpan(
                             text: 'License',
                             style: TextStyle(
@@ -277,7 +276,7 @@ class MyAppState extends State<MyAppPage> {
                               }),
                         TextSpan(
                             text: '. No use of any Covered Software is authorized under this ',
-                            style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                            style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                         TextSpan(
                             text: 'License',
                             style: TextStyle(
@@ -291,7 +290,7 @@ class MyAppState extends State<MyAppPage> {
                                     new MaterialPageRoute(
                                         builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
                               }),
-                        TextSpan(text: ' except under this disclaimer.', style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                        TextSpan(text: ' except under this disclaimer.', style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                       ])),
                   RichText(text: TextSpan(text: '')),
                   RichText(
@@ -299,7 +298,7 @@ class MyAppState extends State<MyAppPage> {
                     text: TextSpan(children: <TextSpan>[
                       TextSpan(
                           text: 'MHD Virtual Table is also using Google services. By using it you agree with ',
-                          style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                          style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                       TextSpan(
                           text: 'Google’s Terms of Service',
                           style: TextStyle(
@@ -310,7 +309,7 @@ class MyAppState extends State<MyAppPage> {
                             ..onTap = () {
                               Navigator.push(context, new MaterialPageRoute(builder: (context) => new BasicWebView('https://policies.google.com/terms')));
                             }),
-                      TextSpan(text: ' and ', style: TextStyle(color: Theme.of(context).textTheme.subtitle.color)),
+                      TextSpan(text: ' and ', style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                       TextSpan(
                           text: 'Google Privacy Policy',
                           style: TextStyle(
@@ -354,7 +353,7 @@ class MyAppState extends State<MyAppPage> {
     _getPrefs().then((prefs) => _legalAlert());
     _checkNetworkStatus().then((status) {
       if (status) {
-        _checkPermisson().then((permission) {
+        _checkPermission().then((permission) {
           // fetchStops().then((value) {
           //   setState(() {
           //     stops.removeRange(0, stops.length);
@@ -427,7 +426,6 @@ class MyAppState extends State<MyAppPage> {
 
   void _onTap(int i){
     setState(() => _selectedIndex = i);
-    
   }
 
   @override

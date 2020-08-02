@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class Trip {
   String _from;
   String _to;

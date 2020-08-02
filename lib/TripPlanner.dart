@@ -57,6 +57,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   bool imhd = false;
   bool _typeError = false;
   bool _networkError = false;
+  bool _searchError = false;
   bool _isSearching = false;
   bool _favoritesNotEmpty = false;
   bool _recentNotEmpty = false;
@@ -198,6 +199,7 @@ class TripPlannerState extends State<TripPlannerPage> {
       setState(() {
         _typeError = false;
         _networkError = false;
+        _searchError = false;
         _isSearching = true;
       });
 
@@ -225,9 +227,14 @@ class TripPlannerState extends State<TripPlannerPage> {
         // Get the JSON data
         if (response.statusCode == 200) {
           data = json.decode(response.body)['routes'];
-          _isSearched = true;
-          _isSearching = false;
-          addToRecent();
+          if (json.decode(response.body)['status'] != "OK") {
+            _searchError = true;
+            _isSearching = false;
+          } else {
+            _isSearched = true;
+            _isSearching = false;
+            addToRecent();
+          }
         } else {
           _isSearching = false;
           _networkError = true;
@@ -264,7 +271,7 @@ class TripPlannerState extends State<TripPlannerPage> {
         });
         _from = 'c' + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString();
       }
-      var jsonUrl = 'https://api.magicsk.eu/trip?time=' + arrivalDepartureTime + '000' + '&from=' + _from + '&to=' + _to;
+      var jsonUrl = 'https://api.magicsk.eu/trip?time=' + _time + '000' + '&from=' + _from + '&to=' + _to;
       print(jsonUrl);
       var response = await http.get(Uri.encodeFull(jsonUrl), headers: {"Accept": "application/json"});
       await isUsed();
@@ -273,9 +280,14 @@ class TripPlannerState extends State<TripPlannerPage> {
         // Get the JSON data
         if (response.statusCode == 200) {
           data = json.decode(response.body)['routes'];
-          _isSearched = true;
-          _isSearching = false;
-          addToRecent();
+          if (json.decode(response.body)['status'] != "OK") {
+            _searchError = true;
+            _isSearching = false;
+          } else {
+            _isSearched = true;
+            _isSearching = false;
+            addToRecent();
+          }
         } else {
           _isSearching = false;
           _networkError = true;
@@ -428,26 +440,26 @@ class TripPlannerState extends State<TripPlannerPage> {
           child: _inputBar(),
         ),
       ),
-      body: _isSearched
+      body: _isSearched || _isSearching
           ? _isSearching
               ? Center(child: CircularProgressIndicator())
-              : _typeError || _networkError
+              : _typeError || _networkError || _searchError
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: <Widget>[
                           Icon(
-                            Icons.error,
+                            _searchError ? Icons.search_off : Icons.error,
                             size: 150.0,
                             color: Colors.grey[300],
                           ),
-                          Text('Something went wrong!', style: TextStyle(color: Colors.grey[500]))
+                          Text(_searchError ? 'No results found!' : 'Something went wrong!', style: TextStyle(color: Colors.grey[500]))
                         ],
                       ),
                     )
                   : _resultsListView(context)
-          : _favoritesNotEmpty
+          : _favoritesNotEmpty || _recentNotEmpty
               ? _favoritesListView(context)
               : Center(
                   child: Column(
@@ -596,9 +608,9 @@ class TripPlannerState extends State<TripPlannerPage> {
     var rgbColor = color.split(',').map((n) {
       return n.replaceAll(RegExp(r"(\D+)"), '');
     }).toList();
-    int r = int.parse(rgbColor[0]);
-    int g = int.parse(rgbColor[1]);
-    int b = int.parse(rgbColor[2]);
+    int r = imhd ? int.parse(rgbColor[0]) : 0;
+    int g = imhd ? int.parse(rgbColor[1]) : 0;
+    int b = imhd ? int.parse(rgbColor[2]) : 0;
     var _stops = details["stops"];
     String lineNumber = imhd ? details["line"]["number"] : details["line"]["short_name"];
     String departureTime = imhd ? details["departure_time"] : details["departure_time"]["text"];
@@ -924,6 +936,80 @@ class TripPlannerState extends State<TripPlannerPage> {
             style: TextStyle(fontSize: 20.0),
           ),
         ),
+        Padding(
+          padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+          child: Card(
+            margin: EdgeInsets.all(3.0),
+            child: InkWell(
+              onTapDown: _storePosition,
+              onLongPress: () {
+                final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+                showMenu(
+                  items: <PopupMenuEntry>[
+                    PopupMenuItem(
+                        child: ListTile(
+                      onTap: () {
+                        log('removed');
+                        setState(() {
+                          _recentNotEmpty = false;
+                          recentTrip.remove(recentTrip[0]);
+                          Navigator.pop(context);
+                        });
+                        createFile(recentTrip, recentTripFileName);
+                      },
+                      contentPadding: EdgeInsets.all(0),
+                      title: Icon(Icons.delete),
+                      trailing: Text('Delete'),
+                    )),
+                  ],
+                  context: context,
+                  position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
+                );
+              },
+              onTap: () {
+                _fromTextController.text = recentTrip[0].from;
+                _toTextController.text = recentTrip[0].to;
+                time = recentTrip[0].time == 0
+                    ? TimeOfDay.now()
+                    : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')));
+                date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                arrivalDepartureTime =
+                    recentTrip[0].time == 0 ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '') : recentTrip[0].time.toString();
+                _pickedTime = recentTrip[0].time != 0;
+                getDirection();
+              },
+              child: Padding(
+                padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
+                child: Flex(
+                  direction: Axis.horizontal,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Icon(Icons.access_time),
+                    Padding(padding: EdgeInsets.all(7.5)),
+                    Container(
+                      constraints: BoxConstraints(maxWidth: 180.0),
+                      child: Text(
+                        recentTrip[0].from != "" ? recentTrip[0].from : 'Actual position',
+                        overflow: TextOverflow.clip,
+                      ),
+                    ),
+                    Text('  >  '),
+                    Expanded(
+                      child: Text(
+                        recentTrip[0].to,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(recentTrip[0].time == 0
+                        ? TimeOfDay.now().format(context)
+                        : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')))
+                            .format(context)), // can be NOW
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
         Expanded(
           child: ListView.builder(
             controller: scrollController,
@@ -936,190 +1022,86 @@ class TripPlannerState extends State<TripPlannerPage> {
                   ? TimeOfDay.now().format(context)
                   : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString().toString() + '000')))
                       .format(context); // can be NOW
-              return Column(
-                children: <Widget>[
-                  _recentNotEmpty
-                      ? index == 0
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                              child: Card(
-                                margin: EdgeInsets.all(3.0),
-                                child: InkWell(
-                                  onTapDown: _storePosition,
-                                  onLongPress: () {
-                                    final RenderBox overlay = Overlay.of(context).context.findRenderObject();
-                                    showMenu(
-                                      items: <PopupMenuEntry>[
-                                        PopupMenuItem(
-                                            child: ListTile(
-                                          onTap: () {
-                                            log('removed');
-                                            setState(() {
-                                              _recentNotEmpty = false;
-                                              recentTrip.remove(recentTrip[0]);
-                                              Navigator.pop(context);
-                                            });
-                                            createFile(recentTrip, recentTripFileName);
-                                          },
-                                          contentPadding: EdgeInsets.all(0),
-                                          title: Icon(Icons.delete),
-                                          trailing: Text('Delete'),
-                                        )),
-                                        // PopupMenuItem(
-                                        //   child: InkWell(
-                                        //     radius: 10,
-                                        //     onTap: () {
-                                        //       log('removed');
-                                        //       setState(() {
-                                        //         recentTrip.remove(recentTrip[0]);
-                                        //       });
-                                        //       createFile(recentTrip, recentTripFileName);
-                                        //     },
-                                        //     child: Padding(
-                                        //       padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
-                                        //       child: Row(
-                                        //         children: <Widget>[
-                                        //           Icon(Icons.delete),
-                                        //           Text("Delete"),
-                                        //         ],
-                                        //       ),
-                                        //     ),
-                                        //   ),
-                                        // )
-                                      ],
-                                      context: context,
-                                      position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
-                                    );
-                                  },
-                                  onTap: () {
-                                    _fromTextController.text = recentTrip[0].from;
-                                    _toTextController.text = recentTrip[0].to;
-                                    time = recentTrip[0].time == 0
-                                        ? TimeOfDay.now()
-                                        : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')));
-                                    date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                                    arrivalDepartureTime = recentTrip[0].time == 0
-                                        ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
-                                        : recentTrip[0].time.toString();
-                                    _pickedTime = recentTrip[0].time != 0;
-                                    getDirection();
-                                  },
-                                  child: Padding(
-                                    padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
-                                    child: Flex(
-                                      direction: Axis.horizontal,
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: <Widget>[
-                                        Icon(Icons.access_time),
-                                        Padding(padding: EdgeInsets.all(7.5)),
-                                        Container(
-                                          constraints: BoxConstraints(maxWidth: 180.0),
-                                          child: Text(
-                                            recentTrip[0].from != "" ? recentTrip[0].from : 'Actual position',
-                                            overflow: TextOverflow.clip,
-                                          ),
-                                        ),
-                                        Text('  >  '),
-                                        Expanded(
-                                          child: Text(
-                                            recentTrip[0].to,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        Text(recentTrip[0].time == 0
-                                            ? TimeOfDay.now().format(context)
-                                            : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')))
-                                                .format(context)), // can be NOW
-                                      ],
-                                    ),
-                                  ),
+              return Padding(
+                padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
+                child: Card(
+                  margin: EdgeInsets.all(3.0),
+                  child: InkWell(
+                    onTapDown: _storePosition,
+                    onLongPress: () {
+                      final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+                      showMenu(
+                        items: <PopupMenuEntry>[
+                          PopupMenuItem(
+                            child: InkWell(
+                              radius: 10,
+                              onTap: () {
+                                log('removed');
+                                setState(() {
+                                  favoriteTrips.remove(favoriteTrips[index]);
+                                });
+                                createFile(favoriteTrips, favoriteTripsFileName);
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
+                                child: Row(
+                                  children: <Widget>[
+                                    Icon(Icons.delete),
+                                    Text("Delete"),
+                                  ],
                                 ),
                               ),
-                            )
-                          : SizedBox.shrink()
-                      : SizedBox.shrink(),
-                  Padding(
-                    padding: EdgeInsets.only(top: 5.0, bottom: 5.0),
-                    child: Card(
-                      margin: EdgeInsets.all(3.0),
-                      child: InkWell(
-                        onTapDown: _storePosition,
-                        onLongPress: () {
-                          final RenderBox overlay = Overlay.of(context).context.findRenderObject();
-                          showMenu(
-                            items: <PopupMenuEntry>[
-                              PopupMenuItem(
-                                child: InkWell(
-                                  radius: 10,
-                                  onTap: () {
-                                    log('removed');
-                                    setState(() {
-                                      favoriteTrips.remove(favoriteTrips[index]);
-                                    });
-                                    createFile(favoriteTrips, favoriteTripsFileName);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
-                                    child: Row(
-                                      children: <Widget>[
-                                        Icon(Icons.delete),
-                                        Text("Delete"),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                            ],
-                            context: context,
-                            position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
-                          );
-                        },
-                        onTap: () {
-                          _fromTextController.text = favoriteTrips[index].from;
-                          _toTextController.text = favoriteTrips[index].to;
-                          time = favoriteTrips[index].time == 0
-                              ? TimeOfDay.now()
-                              : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString() + '000')));
-                          date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                          arrivalDepartureTime = favoriteTrips[index].time == 0
-                              ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
-                              : favoriteTrips[index].time.toString();
-                          _pickedTime = favoriteTrips[index].time != 0;
-                          getDirection();
-                        },
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
-                          child: Flex(
-                            direction: Axis.horizontal,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: <Widget>[
-                              Icon(Icons.favorite),
-                              Padding(padding: EdgeInsets.all(7.5)),
-                              Container(
-                                constraints: BoxConstraints(maxWidth: 180.0),
-                                child: Text(
-                                  _from,
-                                  overflow: TextOverflow.clip,
-                                ),
-                              ),
-                              Text('  >  '),
-                              Expanded(
-                                child: Text(
-                                  _to,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Text(
-                                _time,
-                                textAlign: TextAlign.left,
-                              )
-                            ],
+                            ),
+                          )
+                        ],
+                        context: context,
+                        position: RelativeRect.fromRect(_tapPosition & Size(40, 40), Offset.zero & overlay.size),
+                      );
+                    },
+                    onTap: () {
+                      _fromTextController.text = favoriteTrips[index].from;
+                      _toTextController.text = favoriteTrips[index].to;
+                      time = favoriteTrips[index].time == 0
+                          ? TimeOfDay.now()
+                          : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString() + '000')));
+                      date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+                      arrivalDepartureTime = favoriteTrips[index].time == 0
+                          ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
+                          : favoriteTrips[index].time.toString();
+                      _pickedTime = favoriteTrips[index].time != 0;
+                      getDirection();
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 15.0, bottom: 15.0, top: 20.0, right: 20.0),
+                      child: Flex(
+                        direction: Axis.horizontal,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Icon(Icons.favorite),
+                          Padding(padding: EdgeInsets.all(7.5)),
+                          Container(
+                            constraints: BoxConstraints(maxWidth: 180.0),
+                            child: Text(
+                              _from,
+                              overflow: TextOverflow.clip,
+                            ),
                           ),
-                        ),
+                          Text('  >  '),
+                          Expanded(
+                            child: Text(
+                              _to,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Text(
+                            _time,
+                            textAlign: TextAlign.left,
+                          )
+                        ],
                       ),
                     ),
                   ),
-                ],
+                ),
               );
             },
           ),

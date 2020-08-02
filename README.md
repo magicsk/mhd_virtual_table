@@ -56,4 +56,4 @@ Final tuches
 - cloud save favourites like duckduckgo
 - rework AllStops favorites ✔
 - usage stats
-- REVIEW: <https://maps.googleapis.com/maps/api/directions/json?key=API_KEY&mode=transit&departure_time=1593079800&origin=48.13443,17.206395&destination=Hrad,Bratislava&alternatives=true&region=sk&language=sk>
+- REVIEW: <>
