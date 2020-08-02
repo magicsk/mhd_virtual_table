@@ -56,4 +56,3 @@ Final tuches
 - cloud save favourites like duckduckgo
 - rework AllStops favorites ✔
 - usage stats
-- REVIEW: <>
