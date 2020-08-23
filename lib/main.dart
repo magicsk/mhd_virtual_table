@@ -65,6 +65,7 @@ final _model = ThemeModel(
     primaryColorDark: primaryColor,
     toggleableActiveColor: Colors.red,
     buttonColor: Colors.red,
+    canvasColor: Colors.black,
   ),
 );
 
@@ -236,16 +237,16 @@ class MyAppState extends State<MyAppPage> {
             },
             child: AlertDialog(
               backgroundColor: Theme.of(context).brightness == Brightness.light ? Colors.white : Colors.grey[800],
-              title: Text('Terms of Use and Privacy Policy'),
+              title: Text(AppLocalizations.of(context).tospp),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   RichText(
                       textAlign: TextAlign.justify,
                       text: TextSpan(children: <TextSpan>[
-                        TextSpan(text: 'MHD Virtual Table is provided under this ', style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
+                        TextSpan(text: AppLocalizations.of(context).provided, style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                         TextSpan(
-                            text: 'License',
+                            text: AppLocalizations.of(context).license,
                             style: TextStyle(
                               color: Colors.blue,
                               decoration: TextDecoration.underline,
@@ -258,11 +259,10 @@ class MyAppState extends State<MyAppPage> {
                                         builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
                               }),
                         TextSpan(
-                            text:
-                                ' on an "as is" basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this ',
+                            text: AppLocalizations.of(context).tos1,
                             style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                         TextSpan(
-                            text: 'License',
+                            text: AppLocalizations.of(context).license,
                             style: TextStyle(
                               color: Colors.blue,
                               decoration: TextDecoration.underline,
@@ -275,10 +275,10 @@ class MyAppState extends State<MyAppPage> {
                                         builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
                               }),
                         TextSpan(
-                            text: '. No use of any Covered Software is authorized under this ',
+                            text: AppLocalizations.of(context).tos2,
                             style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                         TextSpan(
-                            text: 'License',
+                            text: AppLocalizations.of(context).license2,
                             style: TextStyle(
                               color: Colors.blue,
                               decoration: TextDecoration.underline,
@@ -290,17 +290,17 @@ class MyAppState extends State<MyAppPage> {
                                     new MaterialPageRoute(
                                         builder: (context) => new BasicWebView('https://github.com/magicsk/mhd_virtual_table/blob/master/LICENSE')));
                               }),
-                        TextSpan(text: ' except under this disclaimer.', style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
+                        TextSpan(text: AppLocalizations.of(context).tos3, style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                       ])),
                   RichText(text: TextSpan(text: '')),
                   RichText(
                     textAlign: TextAlign.justify,
                     text: TextSpan(children: <TextSpan>[
                       TextSpan(
-                          text: 'MHD Virtual Table is also using Google services. By using it you agree with ',
+                          text: AppLocalizations.of(context).tos4,
                           style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                       TextSpan(
-                          text: 'Google’s Terms of Service',
+                          text: AppLocalizations.of(context).gToS,
                           style: TextStyle(
                             color: Colors.blue,
                             decoration: TextDecoration.underline,
@@ -309,9 +309,9 @@ class MyAppState extends State<MyAppPage> {
                             ..onTap = () {
                               Navigator.push(context, new MaterialPageRoute(builder: (context) => new BasicWebView('https://policies.google.com/terms')));
                             }),
-                      TextSpan(text: ' and ', style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
+                      TextSpan(text: AppLocalizations.of(context).and, style: TextStyle(color: Theme.of(context).textTheme.subtitle2.color)),
                       TextSpan(
-                          text: 'Google Privacy Policy',
+                          text: AppLocalizations.of(context).gPP,
                           style: TextStyle(
                             color: Colors.blue,
                             decoration: TextDecoration.underline,
@@ -332,13 +332,13 @@ class MyAppState extends State<MyAppPage> {
                     SharedPreferences.getInstance().then((prefs) => prefs.setBool("legalAgreed", true));
                     Navigator.pop(context);
                   },
-                  child: Text('Accept'),
+                  child: Text(AppLocalizations.of(context).accept),
                 ),
                 FlatButton(
                   onPressed: () {
                     exit(0);
                   },
-                  child: Text('Decline'),
+                  child: Text(AppLocalizations.of(context).decline),
                 ),
               ],
             ),
@@ -410,18 +410,18 @@ class MyAppState extends State<MyAppPage> {
   ];
 
   Widget _bottomNavigationBar(int selectedIndex, ThemeModel model) => BottomNavigationBar(
-          backgroundColor: model.backgroundColor,
-          type: BottomNavigationBarType.fixed,
+          backgroundColor: model.accentColor,
+          type: BottomNavigationBarType.shifting,
           selectedItemColor: primaryColor,
-          // unselectedItemColor: Color(0xFF737373),
+          unselectedItemColor: Color(0xFF737373),
           currentIndex: selectedIndex,
           onTap: _onTap,
           items: [
             // add localization
-            BottomNavigationBarItem(icon: Icon(Icons.transfer_within_a_station), title: Text('Trip planner')),
-            BottomNavigationBarItem(icon: Icon(Icons.near_me), title: Text(AppLocalizations.of(context).nearMeNav)),
-            BottomNavigationBarItem(icon: Icon(Icons.my_location), title: Text(AppLocalizations.of(context).actualNav)),
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard), title: Text(AppLocalizations.of(context).allstopsNav)),
+            BottomNavigationBarItem(icon: Icon(Icons.transfer_within_a_station), label: AppLocalizations.of(context).tripPlannerNav),
+            BottomNavigationBarItem(icon: Icon(Icons.near_me), label: AppLocalizations.of(context).nearMeNav),
+            BottomNavigationBarItem(icon: Icon(Icons.my_location), label: AppLocalizations.of(context).actualNav),
+            BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: AppLocalizations.of(context).allstopsNav),
           ]);
 
   void _onTap(int i){

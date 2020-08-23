@@ -16,6 +16,7 @@ import 'package:native_color/native_color.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'locale/locales.dart';
 import 'widgets/favoritesList.dart';
 // import 'locale/locales.dart';
 import 'widgets/stopList.dart';
@@ -54,7 +55,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   bool favoritesExists = false;
   bool favoriteTripsExists = false;
   bool recentTripExists = false;
-  bool imhd = false;
+  bool imhd = true;
   bool _typeError = false;
   bool _networkError = false;
   bool _searchError = false;
@@ -89,7 +90,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   _getPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      imhd = prefs.getBool('imhd') == null ? false : prefs.getBool('imhd');
+      imhd = prefs.getBool('imhd') == null ? true : prefs.getBool('imhd');
     });
   }
 
@@ -171,7 +172,7 @@ class TripPlannerState extends State<TripPlannerPage> {
               geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best).then((loc) => {
                     setState(() {
                       currentLocation = loc;
-                      _fromHint = "Actual position";
+                      _fromHint = AppLocalizations.of(context).actualPosition;
                     })
                   })
             }
@@ -408,7 +409,7 @@ class TripPlannerState extends State<TripPlannerPage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('Trip planner'),
+        title: Text(AppLocalizations.of(context).tripPlannerTitle),
         actions: <Widget>[
           IconButton(
             icon: Icon(Icons.more_vert),
@@ -420,7 +421,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                   PopupMenuItem(
                     child: SwitchListTile(
                       contentPadding: EdgeInsets.all(0),
-                      title: Text('Alternative api'),
+                      title: Text(AppLocalizations.of(context).altApi),
                       value: imhd,
                       onChanged: (bool) {
                         setState(() {
@@ -454,7 +455,8 @@ class TripPlannerState extends State<TripPlannerPage> {
                             size: 150.0,
                             color: Colors.grey[300],
                           ),
-                          Text(_searchError ? 'No results found!' : 'Something went wrong!', style: TextStyle(color: Colors.grey[500]))
+                          Text(_searchError ? AppLocalizations.of(context).noResults : AppLocalizations.of(context).errorUnknown,
+                              style: TextStyle(color: Colors.grey[500]))
                         ],
                       ),
                     )
@@ -467,7 +469,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: <Widget>[
                       Icon(Icons.search, size: 150.0, color: Colors.grey[300]),
-                      Text("Plan your journey via public transport!", style: TextStyle(color: Colors.grey[500]))
+                      Text(AppLocalizations.of(context).planDesc, style: TextStyle(color: Colors.grey[500]))
                     ],
                   ),
                 ),
@@ -483,7 +485,7 @@ class TripPlannerState extends State<TripPlannerPage> {
             padding: EdgeInsets.only(left: 15.0, bottom: 0, top: 0),
             child: Row(
               children: <Widget>[
-                Text('Add to Favorites'),
+                Text(AppLocalizations.of(context).addFav),
                 IconButton(
                   icon: Icon(_used ? Icons.favorite : Icons.favorite_border),
                   onPressed: () => favoriteTrip(),
@@ -627,7 +629,9 @@ class TripPlannerState extends State<TripPlannerPage> {
           decoration: BoxDecoration(color: imhd ? Color.fromRGBO(r, g, b, 1.0) : HexColor(color), borderRadius: BorderRadius.all(Radius.circular(5))),
           width: 45.0,
           height: 30.0,
-          child: Center(child: Text(shortName ? lineNumber : "Train", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.white))),
+          child: Center(
+              child: Text(shortName ? lineNumber : AppLocalizations.of(context).train,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0, color: Colors.white))),
         ),
       ),
       title: Container(
@@ -702,13 +706,13 @@ class TripPlannerState extends State<TripPlannerPage> {
             )),
       ),
       title: (!isItStop(_toTextController.text))
-          ? Text("Prejdite na zastávku ${_toTextController.text}. (${details["duration"]["text"]})", style: TextStyle(fontSize: 14))
+          ? Text(AppLocalizations.of(context).goToStop + "${_toTextController.text}. (${details["duration"]["text"]})", style: TextStyle(fontSize: 14))
           : Text(
               last
                   ? details["html_instructions"].toString()
                   : onlyOne
                       ? details["html_instructions"].toString()
-                      : details["html_instructions"].toString().replaceAll('miesto', 'zastávku') + " (${details["duration"]["text"]})",
+                      : details["html_instructions"].toString().replaceAll('miesto', AppLocalizations.of(context).stop) + " (${details["duration"]["text"]})",
               style: TextStyle(fontSize: 14)),
     );
   }
@@ -860,7 +864,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                                   inactiveColor: Colors.white,
                                 ),
                                 Padding(padding: EdgeInsets.only(right: 10.0)),
-                                Text('Departure', style: TextStyle(color: Colors.white)),
+                                Text(AppLocalizations.of(context).departure, style: TextStyle(color: Colors.white)),
                               ],
                             ),
                           ),
@@ -886,7 +890,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                                 ),
                                 Padding(padding: EdgeInsets.only(right: 10.0)),
                                 Text(
-                                  'Arrival',
+                                  AppLocalizations.of(context).arrival,
                                   style: TextStyle(color: Colors.white),
                                 ),
                               ],
@@ -932,7 +936,7 @@ class TripPlannerState extends State<TripPlannerPage> {
         Padding(
           padding: const EdgeInsets.only(top: 15.0, bottom: 10.0),
           child: Text(
-            'Favorites',
+            AppLocalizations.of(context).favorites,
             style: TextStyle(fontSize: 20.0),
           ),
         ),
@@ -959,7 +963,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                       },
                       contentPadding: EdgeInsets.all(0),
                       title: Icon(Icons.delete),
-                      trailing: Text('Delete'),
+                      trailing: Text(AppLocalizations.of(context).delete),
                     )),
                   ],
                   context: context,
@@ -969,13 +973,12 @@ class TripPlannerState extends State<TripPlannerPage> {
               onTap: () {
                 _fromTextController.text = recentTrip[0].from;
                 _toTextController.text = recentTrip[0].to;
-                time = recentTrip[0].time == 0
-                    ? TimeOfDay.now()
-                    : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')));
+                time = TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')));
                 date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                arrivalDepartureTime =
-                    recentTrip[0].time == 0 ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '') : recentTrip[0].time.toString();
-                _pickedTime = recentTrip[0].time != 0;
+                arrivalDepartureTime = date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+                setState(() {
+                  _pickedTime = recentTrip[0].time != 0;
+                });
                 getDirection();
               },
               child: Padding(
@@ -989,7 +992,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                     Container(
                       constraints: BoxConstraints(maxWidth: 180.0),
                       child: Text(
-                        recentTrip[0].from != "" ? recentTrip[0].from : 'Actual position',
+                        recentTrip[0].from != "" ? recentTrip[0].from : AppLocalizations.of(context).actualPosition,
                         overflow: TextOverflow.clip,
                       ),
                     ),
@@ -1016,7 +1019,7 @@ class TripPlannerState extends State<TripPlannerPage> {
             scrollDirection: Axis.vertical,
             itemCount: favoriteTrips.length,
             itemBuilder: (context, index) {
-              String _from = favoriteTrips[index].from != "" ? favoriteTrips[index].from : 'Actual position';
+              String _from = favoriteTrips[index].from != "" ? favoriteTrips[index].from : AppLocalizations.of(context).actualPosition;
               String _to = favoriteTrips[index].to;
               String _time = favoriteTrips[index].time == 0
                   ? TimeOfDay.now().format(context)
@@ -1041,13 +1044,14 @@ class TripPlannerState extends State<TripPlannerPage> {
                                   favoriteTrips.remove(favoriteTrips[index]);
                                 });
                                 createFile(favoriteTrips, favoriteTripsFileName);
+                                Navigator.pop(context);
                               },
                               child: Padding(
                                 padding: const EdgeInsets.only(top: 12.0, bottom: 12.0),
                                 child: Row(
                                   children: <Widget>[
                                     Icon(Icons.delete),
-                                    Text("Delete"),
+                                    Text(AppLocalizations.of(context).delete),
                                   ],
                                 ),
                               ),
@@ -1061,14 +1065,12 @@ class TripPlannerState extends State<TripPlannerPage> {
                     onTap: () {
                       _fromTextController.text = favoriteTrips[index].from;
                       _toTextController.text = favoriteTrips[index].to;
-                      time = favoriteTrips[index].time == 0
-                          ? TimeOfDay.now()
-                          : TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString() + '000')));
+                      time = TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString() + '000')));
                       date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                      arrivalDepartureTime = favoriteTrips[index].time == 0
-                          ? date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '')
-                          : favoriteTrips[index].time.toString();
-                      _pickedTime = favoriteTrips[index].time != 0;
+                      arrivalDepartureTime = date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+                      setState(() {
+                        _pickedTime = favoriteTrips[index].time != 0;
+                      });
                       getDirection();
                     },
                     child: Padding(

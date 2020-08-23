@@ -66,6 +66,12 @@
     "type": "text",
     "placeholders": {}
   },
+  "tripPlannerNav": "Plánovač ciest",
+  "@tripPlannerNav": {
+    "description": "Bottom Navigation Bar Trip planner",
+    "type": "text",
+    "placeholders": {}
+  },
   "nearMeTitle": "Najbližšie zastávky",
   "@nearMeTitle": {
     "description": "Title Near me",
@@ -75,6 +81,12 @@
   "allstopsTitle": "Všetky zastávky",
   "@allstopsTitle": {
     "description": "Title All stops",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tripPlannerTitle": "Plánovač ciest",
+  "@tripPlannerTitle": {
+    "description": "Title Trip planner",
     "type": "text",
     "placeholders": {}
   },
@@ -126,6 +138,12 @@
     "type": "text",
     "placeholders": {}
   },
+  "autoTheme": "Automatická",
+  "@autoTheme": {
+    "description": "Automatic option",
+    "type": "text",
+    "placeholders": {}
+  },
   "darkTheme": "Tmavá téma",
   "@darkTheme": {
     "description": "Dark theme option",
@@ -135,6 +153,192 @@
   "blackTheme": "Čierna téma",
   "@blackTheme": {
     "description": "Dark theme option",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tableTheme": "Téma tabúľ",
+  "@tableTheme": {
+    "description": "Table theme option",
+    "type": "text",
+    "placeholders": {}
+  },
+  "anonymousCloudSave": "Anonymné uloženie obľúbených (už čoskoro)",
+  "@anonymousCloudSave": {
+    "description": "Anonymous cloud save title",
+    "type": "text",
+    "placeholders": {}
+  },
+  "loadSettings": "Načítať nastavenia",
+  "@loadSettings": {
+    "description": "Load settings",
+    "type": "text",
+    "placeholders": {}
+  },
+  "saveSettings": "Uložiť nastavenia",
+  "@saveSettings": {
+    "description": "Save settings",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tospp": "Ochrana súkromia a Zmluvné podmienky",
+  "@tospp": {
+    "description": "Terms of Use and Privacy Policy",
+    "type": "text",
+    "placeholders": {}
+  },
+  "provided": "MHD Virtuálna Tabľa je poskytovaná na základe tejto ",
+  "@provided": {
+    "description": "MHD Virtual Table is provided under this ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "license": "Licencie",
+  "@license": {
+    "description": "License",
+    "type": "text",
+    "placeholders": {}
+  },
+    "license2": "Licenciou",
+  "@license2": {
+    "description": "License",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos1": " \"ako je\" bez akejkoľvek záruky, vyjadrenej, predpokladanej alebo zákonnej, vrátane, bez obmedzenia, záruk, že zahrnutý softvér je bez vád, obchodovateľný, vhodný na konkrétny účel alebo neporušujúci , Celé riziko týkajúce sa kvality a výkonu Krytého softvéru je na vás. V prípade, že sa ktorýkoľvek krytý softvér v akomkoľvek ohľade preukáže ako chybný, preberiete náklady (potrebné pre prípadné opravy, opravy alebo opravy) vy (nie žiadny prispievateľ). Toto vylúčenie zodpovednosti predstavuje jeho podstatnú súčasť tejto ",
+  "@tos1": {
+    "description": " on an \"as is\" basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos2": ". Žiadne použitie akéhokoľvek Krytého softvéru nieje povolené pod touto ",
+  "@tos2": {
+    "description": ". No use of any Covered Software is authorized under this ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos3": " s výnimkou tohto zrieknutia sa zodpovednosti.",
+  "@tos3": {
+    "description": " except under this disclaimer.",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos4": "MHD Virtuálna Tabuľa tiež používa služby Google. Používaním súhlasíte s  ",
+  "@tos4": {
+    "description": "MHD Virtual Table is also using Google services. By using it you agree with ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "gToS": "Zmluvnymi podmienkami Google",
+  "@gToS": {
+    "description": "Google’s Terms of Service",
+    "type": "text",
+    "placeholders": {}
+  },
+  "gPP": "Pravidlami ochrany súkromia Google",
+  "@gPP": {
+    "description": "Google Privacy Policy",
+    "type": "text",
+    "placeholders": {}
+  },
+  "and": " a ",
+  "@and": {
+    "description": " and ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "accept": "Súhlasím",
+  "@accept": {
+    "description": "Accept",
+    "type": "text",
+    "placeholders": {}
+  },
+  "decline": "Nesúhlasím",
+  "@decline": {
+    "description": "Decline",
+    "type": "text",
+    "placeholders": {}
+  },
+  "unavailable": "Momentálne nedostupné, skúste to znova neskôr!",
+  "@unavailable": {
+    "description": "Currently unavailable, try again later!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "actualPosition": "Actuálna pozícia",
+  "@actualPosition": {
+    "description": "Actual position",
+    "type": "text",
+    "placeholders": {}
+  },
+  "altApi": "Alternativny zdroj",
+  "@altApi": {
+    "description": "Alternative api",
+    "type": "text",
+    "placeholders": {}
+  },
+  "noResults": "Neboli nájdené žiadne výsledky!",
+  "@noResults": {
+    "description": "No results found!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "errorUnknown": "Niečo sa pokazilo!",
+  "@errorUnknown": {
+    "description": "Something went wrong!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "planDesc": "Naplánujte si cestu verejnou dopravou!",
+  "@planDesc": {
+    "description": "Plan your journey via public transport!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "addFav": "Pridať do obľúbených",
+  "@addFav": {
+    "description": "Add to Favorites",
+    "type": "text",
+    "placeholders": {}
+  },
+  "train": "Vlak",
+  "@train": {
+    "description": "Train",
+    "type": "text",
+    "placeholders": {}
+  },
+  "goToStop": "Prejdite na zastávku ",
+  "@goToStop": {
+    "description": "Go to stop ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "stop": "zastávku",
+  "@stop": {
+    "description": "Stop",
+    "type": "text",
+    "placeholders": {}
+  },
+  "departure": "Odchod",
+  "@departure": {
+    "description": "Departure",
+    "type": "text",
+    "placeholders": {}
+  },
+  "arrival": "Príchod",
+  "@arrival": {
+    "description": "Arrival",
+    "type": "text",
+    "placeholders": {}
+  },
+  "favorites": "Obľúbené",
+  "@favorites": {
+    "description": "Favorites",
+    "type": "text",
+    "placeholders": {}
+  },
+  "delete": "Vymazať",
+  "@delete": {
+    "description": "Delete",
     "type": "text",
     "placeholders": {}
   }

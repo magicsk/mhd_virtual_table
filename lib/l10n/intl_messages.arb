@@ -1,5 +1,5 @@
 {
-  "@@last_modified": "2019-07-15T18:37:53.584430",
+  "@@last_modified": "2020-08-21T12:47:31.930758",
   "cancel": "Cancel",
   "@cancel": {
     "description": "Cancel alert button",
@@ -18,19 +18,19 @@
     "type": "text",
     "placeholders": {}
   },
-  "attentionDesc": "Access to your locaton is restricted by your OS, some functions might not work properly.",
+  "attentionDesc": "Access to your location is restricted by your OS, some functions might not work properly.",
   "@attentionDesc": {
     "description": "Attention alert description",
     "type": "text",
     "placeholders": {}
   },
-  "unknown": "Access unknow!",
+  "unknown": "Access unknown!",
   "@unknown": {
     "description": "Unknown alert",
     "type": "text",
     "placeholders": {}
   },
-  "unknownDesc": "Permission status of your position is unknown. Do you want to use your location(must be enabled in settings)? Otherways your location will not be used!",
+  "unknownDesc": "Permission status of your position is unknown. Do you want to use your location(must be enabled in settings)? Otherwise your location will not be used!",
   "@unknownDesc": {
     "description": "Unknown alert description",
     "type": "text",
@@ -42,7 +42,7 @@
     "type": "text",
     "placeholders": {}
   },
-  "deniedDesc": "Access to your position was denied. Do you want to change it in settings? Otherways some functions will be restricted!",
+  "deniedDesc": "Access to your position was denied. Do you want to change it in settings? Otherwise some functions will be restricted!",
   "@deniedDesc": {
     "description": "Denied alert description",
     "type": "text",
@@ -66,6 +66,12 @@
     "type": "text",
     "placeholders": {}
   },
+  "tripPlannerNav": "Trip planner",
+  "@tripPlannerNav": {
+    "description": "Bottom Navigation Bar Trip planner",
+    "type": "text",
+    "placeholders": {}
+  },
   "nearMeTitle": "Nearest stops",
   "@nearMeTitle": {
     "description": "Title Near me",
@@ -75,6 +81,12 @@
   "allstopsTitle": "Stops",
   "@allstopsTitle": {
     "description": "Title All stops",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tripPlannerTitle": "Trip planner",
+  "@tripPlannerTitle": {
+    "description": "Title Trip planner",
     "type": "text",
     "placeholders": {}
   },
@@ -126,6 +138,12 @@
     "type": "text",
     "placeholders": {}
   },
+  "autoTheme": "Automatic",
+  "@autoTheme": {
+    "description": "Automatic option",
+    "type": "text",
+    "placeholders": {}
+  },
   "darkTheme": "Dark theme",
   "@darkTheme": {
     "description": "Dark theme option",
@@ -135,6 +153,192 @@
   "blackTheme": "Black theme",
   "@blackTheme": {
     "description": "Dark theme option",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tableTheme": "Table theme",
+  "@tableTheme": {
+    "description": "Table theme option",
+    "type": "text",
+    "placeholders": {}
+  },
+  "anonymousCloudSave": "Anonymous cloud save(WIP)",
+  "@anonymousCloudSave": {
+    "description": "Anonymous cloud save title",
+    "type": "text",
+    "placeholders": {}
+  },
+  "loadSettings": "Load settings",
+  "@loadSettings": {
+    "description": "Load settings",
+    "type": "text",
+    "placeholders": {}
+  },
+  "saveSettings": "Save settings",
+  "@saveSettings": {
+    "description": "Save settings",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tospp": "Terms of Use and Privacy Policy",
+  "@tospp": {
+    "description": "Terms of Use and Privacy Policy",
+    "type": "text",
+    "placeholders": {}
+  },
+  "provided": "MHD Virtual Table is provided under this ",
+  "@provided": {
+    "description": "MHD Virtual Table is provided under this ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "license": "License",
+  "@license": {
+    "description": "License",
+    "type": "text",
+    "placeholders": {}
+  },
+  "license2": "License",
+  "@license2": {
+    "description": "License",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos1": " on an \"as is\" basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this ",
+  "@tos1": {
+    "description": " on an \"as is\" basis, without warranty of any kind, either expressed, implied, or statutory, including, without limitation, warranties that the Covered Software is free of defects, merchantable, fit for a particular purpose or non-infringing. The entire risk as to the quality and performance of the Covered Software is with You. Should any Covered Software prove defective in any respect, You (not any Contributor) assume the cost of any necessary servicing, repair, or correction. This disclaimer of warranty constitutes an essential part of this ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos2": ". No use of any Covered Software is authorized under this ",
+  "@tos2": {
+    "description": ". No use of any Covered Software is authorized under this ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos3": " except under this disclaimer.",
+  "@tos3": {
+    "description": " except under this disclaimer.",
+    "type": "text",
+    "placeholders": {}
+  },
+  "tos4": "MHD Virtual Table is also using Google services. By using it you agree with ",
+  "@tos4": {
+    "description": "MHD Virtual Table is also using Google services. By using it you agree with ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "gToS": "Google’s Terms of Service",
+  "@gToS": {
+    "description": "Google’s Terms of Service",
+    "type": "text",
+    "placeholders": {}
+  },
+  "gPP": "Google Privacy Policy",
+  "@gPP": {
+    "description": "Google Privacy Policy",
+    "type": "text",
+    "placeholders": {}
+  },
+  "and": " and ",
+  "@and": {
+    "description": " and ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "accept": "Accept",
+  "@accept": {
+    "description": "Accept",
+    "type": "text",
+    "placeholders": {}
+  },
+  "decline": "Decline",
+  "@decline": {
+    "description": "Decline",
+    "type": "text",
+    "placeholders": {}
+  },
+  "unavailable": "Currently unavailable, try again later!",
+  "@unavailable": {
+    "description": "Currently unavailable, try again later!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "actualPosition": "Actual position",
+  "@actualPosition": {
+    "description": "Actual position",
+    "type": "text",
+    "placeholders": {}
+  },
+  "altApi": "Alternative api",
+  "@altApi": {
+    "description": "Alternative api",
+    "type": "text",
+    "placeholders": {}
+  },
+  "noResults": "No results found!",
+  "@noResults": {
+    "description": "No results found!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "errorUnknown": "Something went wrong!",
+  "@errorUnknown": {
+    "description": "Something went wrong!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "planDesc": "Plan your journey via public transport!",
+  "@planDesc": {
+    "description": "Plan your journey via public transport!",
+    "type": "text",
+    "placeholders": {}
+  },
+  "addFav": "Add to Favorites",
+  "@addFav": {
+    "description": "Add to Favorites",
+    "type": "text",
+    "placeholders": {}
+  },
+  "train": "Train",
+  "@train": {
+    "description": "Train",
+    "type": "text",
+    "placeholders": {}
+  },
+  "goToStop": "Go to stop ",
+  "@goToStop": {
+    "description": "Go to stop ",
+    "type": "text",
+    "placeholders": {}
+  },
+  "stop": "stop",
+  "@stop": {
+    "description": "Stop",
+    "type": "text",
+    "placeholders": {}
+  },
+  "departure": "Departure",
+  "@departure": {
+    "description": "Departure",
+    "type": "text",
+    "placeholders": {}
+  },
+  "arrival": "Arrival",
+  "@arrival": {
+    "description": "Arrival",
+    "type": "text",
+    "placeholders": {}
+  },
+  "favorites": "Favorites",
+  "@favorites": {
+    "description": "Favorites",
+    "type": "text",
+    "placeholders": {}
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete",
     "type": "text",
     "placeholders": {}
   }

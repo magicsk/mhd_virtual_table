@@ -27,18 +27,17 @@ class _SettingsState extends State<Settings> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          AutoModeSwitch(),
-          DarkModeSwitch(),
-          TrueBlackSwitch(),
+          AutoModeSwitch(title: Text(AppLocalizations.of(context).autoTheme),),
+          DarkModeSwitch(title: Text(AppLocalizations.of(context).darkTheme),),
+          TrueBlackSwitch(title: Text(AppLocalizations.of(context).blackTheme),),
           DropdownPreference(
-            'Table theme',
+            AppLocalizations.of(context).tableTheme,
             'tableTheme',
             defaultVal: 'Auto',
             values: ['Auto', 'Light', 'Dark', 'Blue'],
             onChange: (value) async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
               setState(() {
-                prefs.setString('tableTheme', value);
                 switch (value) {
                   case 'Dark':
                     prefs.setString('tableTheme', 'black');
@@ -60,7 +59,7 @@ class _SettingsState extends State<Settings> {
           Divider(),
           Padding(
             padding: const EdgeInsets.only(left:16.0, top: 8.0),
-            child: Text('Anonymous cloud save(WIP)',style: TextStyle(fontSize: 16.0)),
+            child: Text(AppLocalizations.of(context).anonymousCloudSave, style: TextStyle(fontSize: 16.0)),
           ),
           Padding(
             padding: const EdgeInsets.only(left:16.0, right:16.0, bottom: 10.0),
@@ -75,8 +74,8 @@ class _SettingsState extends State<Settings> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              RaisedButton(child: Text('Load settings'), onPressed: null),
-              RaisedButton( child: Text('Save settings'), onPressed: null),
+              RaisedButton(child: Text(AppLocalizations.of(context).loadSettings), onPressed: null),
+              RaisedButton( child: Text(AppLocalizations.of(context).saveSettings), onPressed: null),
             ],
           )
         ],

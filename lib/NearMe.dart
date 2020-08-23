@@ -253,7 +253,7 @@ class _NearMeState extends State<NearMePage> {
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: <Widget>[
                                       Icon(Icons.warning, size: 150.0, color: Colors.grey[300]),
-                                      Text('Currently unavailable, try again later!', style: TextStyle(color: Colors.grey[500]))
+                                      Text(AppLocalizations.of(context).unavailable, style: TextStyle(color: Colors.grey[500]))
                                     ],
                                   ),
                                 )

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'stopList.dart';
 
-class StopWebView extends StatefulWidget {
+class   StopWebView extends StatefulWidget {
   final Stop stop;
   StopWebView(this.stop);
   @override
@@ -31,7 +31,7 @@ class StopWebViewState extends State<StopWebView> {
     _getPrefs();
     super.initState();
   }
-
+  
   final Stop stop;
   StopWebViewState(this.stop);
   Widget build(BuildContext context) {
