@@ -13,7 +13,6 @@ Add nearme
 - cache ✔
 - speed ✔
 - on changed position (maybe) ✘ -> used button refresh ✔
-- own api
 
 Better permission check
 
@@ -41,7 +40,7 @@ Trip planner
 - loading when fetching ✔
 - offline alert ✔
 - favourites ✔
-- multiple APIs
+- multiple APIs ✔
 
 Final tuches
 
