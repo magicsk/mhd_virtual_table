@@ -2,6 +2,10 @@
 
 App with list of virtual tables for MHD in Bratislava.
 
+You can try this app only by sideloading .apk from **[Releases](https://github.com/magicsk/mhd_virtual_table/releases)**, or if you contact me i can add you to test flight on Firebase. It will be soon on the Google play store.
+
+![preview](https://files.magicsk.eu/file/app.gif?time=1600788599070)
+
 ## TODO
 
 Main
