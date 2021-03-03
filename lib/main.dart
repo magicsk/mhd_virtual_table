@@ -45,6 +45,7 @@ final _model = ThemeModel(
     accentColor: Colors.red,
     toggleableActiveColor: Colors.red,
     buttonColor: Colors.red,
+    appBarTheme: AppBarTheme(brightness: Brightness.dark)
   ),
   customDarkTheme: ThemeData(
     primaryColor: primaryColor,
@@ -73,7 +74,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableProvider<ThemeModel>(
-      builder: (_) => _model..init(),
+      create: (_) => _model..init(),
       child: Consumer<ThemeModel>(builder: (context, model, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
@@ -141,40 +142,16 @@ class MyAppState extends State<MyAppPage> {
   }
 
   _checkPermission() async {
-    await PermissionHandler().requestPermissions([PermissionGroup.locationWhenInUse]);
-    await PermissionHandler().checkPermissionStatus(PermissionGroup.locationWhenInUse).then((status) async {
-      if (status == PermissionStatus.granted) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('_gotPermission', true);
+    await Permission.locationWhenInUse.request();
+    _gotPermission = await Permission.location.isGranted;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('_gotPermission', _gotPermission);
+      if (_gotPermission) {
         _gotPermission = true;
-      } else if (status == PermissionStatus.restricted) {
-        setState(() async {
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('_gotPermission', false);
-          _gotPermission = false;
-          Alert.alert(context, title: AppLocalizations.of(context).attention, content: AppLocalizations.of(context).attentionDesc);
-        });
-        print('restricted');
-      } else if (status == PermissionStatus.unknown) {
-        Alert.confirm(context, title: AppLocalizations.of(context).unknown, content: AppLocalizations.of(context).unknownDesc).then((int ret) async {
-          if (ret == Alert.OK) {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('_gotPermission', true);
-            _gotPermission = true;
-          } else {
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            await prefs.setBool('_gotPermission', false);
-            _gotPermission = false;
-          }
-        });
-      } else if (status == PermissionStatus.disabled) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('_gotPermission', true);
-        _gotPermission = true;
-      } else {
+      } else if (await Permission.locationWhenInUse.isDenied) {
         Alert.confirm(context, title: AppLocalizations.of(context).denied, content: AppLocalizations.of(context).deniedDesc).then((int ret) async {
           if (ret == Alert.OK) {
-            PermissionHandler().openAppSettings();
+            Permission.locationWhenInUse.request();
             SharedPreferences prefs = await SharedPreferences.getInstance();
             await prefs.setBool('_gotPermission', false);
             _gotPermission = false;
@@ -185,7 +162,6 @@ class MyAppState extends State<MyAppPage> {
           }
         });
       }
-    });
     return _gotPermission;
   }
 
@@ -207,7 +183,7 @@ class MyAppState extends State<MyAppPage> {
   Future<List<Stop>> fetchNearStops() async {
     var currentLocation;
     try {
-      currentLocation = await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+      currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
     } catch (e) {
       currentLocation = null;
     }
@@ -433,8 +409,8 @@ class MyAppState extends State<MyAppPage> {
     final _theme = Provider.of<ThemeModel>(context);
     _theme.checkPlatformBrightness(context);
     Locale myLocale = Localizations.localeOf(context);
-    return ListenableProvider<ThemeModel>(
-      builder: (_) => _model..init(),
+    return ListenableProvider<ThemeModel>.value(
+      value: _model..init(),
       child: Consumer<ThemeModel>(builder: (context, model, child) {
         return _isLoading
             ? MaterialApp(

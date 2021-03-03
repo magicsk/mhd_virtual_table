@@ -27,7 +27,7 @@ class _SettingsState extends State<Settings> {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          AutoModeSwitch(title: Text(AppLocalizations.of(context).autoTheme),),
+          AutoSwitch(title: Text(AppLocalizations.of(context).autoTheme),),
           DarkModeSwitch(title: Text(AppLocalizations.of(context).darkTheme),),
           TrueBlackSwitch(title: Text(AppLocalizations.of(context).blackTheme),),
           DropdownPreference(

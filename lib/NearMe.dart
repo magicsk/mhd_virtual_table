@@ -38,7 +38,7 @@ class _NearMeState extends State<NearMePage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       tableTheme = prefs.getString('tableTheme');
-      _gotPermission = prefs.getBool('_gotPermission');
+      _gotPermission = (prefs.getBool('_gotPermission') ?? false);
       print(_gotPermission);
     });
     return _gotPermission;
@@ -56,20 +56,13 @@ class _NearMeState extends State<NearMePage> {
   }
 
   _checkLocationStatus() async {
-    await PermissionHandler().checkServiceStatus(PermissionGroup.location).then((status) {
-      if (status == ServiceStatus.enabled) {
-        _locationStatus = true;
-      } else {
-        _locationStatus = false;
-      }
-    });
-    return _locationStatus;
+    return await Permission.location.isGranted;
   }
 
   Future<List<Stop>> fetchNearStops() async {
     var currentLocation;
     try {
-      currentLocation = await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+      currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
     } catch (e) {
       currentLocation = null;
     }
@@ -205,7 +198,7 @@ class _NearMeState extends State<NearMePage> {
                                 });
                                 var currentLocation;
                                 try {
-                                  currentLocation = await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+                                  currentLocation = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
                                 } catch (e) {
                                   currentLocation = null;
                                 }

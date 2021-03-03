@@ -78,13 +78,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   final ScrollController scrollController = ScrollController();
 
   Future<bool> _checkLocationStatus() async {
-    return await PermissionHandler().checkServiceStatus(PermissionGroup.location).then((status) {
-      if (status == ServiceStatus.enabled) {
-        return true;
-      } else {
-        return false;
-      }
-    });
+    return await Permission.location.isGranted;
   }
 
   _getPrefs() async {
@@ -169,7 +163,7 @@ class TripPlannerState extends State<TripPlannerPage> {
     _checkLocationStatus().then((status) => {
           if (status)
             {
-              geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best).then((loc) => {
+              Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best).then((loc) => {
                     setState(() {
                       currentLocation = loc;
                       _fromHint = AppLocalizations.of(context).actualPosition;
@@ -266,7 +260,7 @@ class TripPlannerState extends State<TripPlannerPage> {
       if (currentLocation != null && _fromTextController.value.text == '') {
         _from = 'c' + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString();
       } else if (currentLocation == null && _fromTextController.value.text == '') {
-        var _loc = await geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+        var _loc = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
         setState(() {
           currentLocation = _loc;
         });
@@ -613,7 +607,7 @@ class TripPlannerState extends State<TripPlannerPage> {
     int r = imhd ? int.parse(rgbColor[0]) : 0;
     int g = imhd ? int.parse(rgbColor[1]) : 0;
     int b = imhd ? int.parse(rgbColor[2]) : 0;
-    var _stops = details["stops"];
+    // var _stops = details["stops"];
     String lineNumber = imhd ? details["line"]["number"] : details["line"]["short_name"];
     String departureTime = imhd ? details["departure_time"] : details["departure_time"]["text"];
     String departureStop = imhd ? details["departure_stop"] : details["departure_stop"]["name"];
@@ -668,29 +662,31 @@ class TripPlannerState extends State<TripPlannerPage> {
     );
   }
 
-  _stopsDetail(_stops, departureTime, departureStop, arrivalTime, arrivalStop) {
-    int _count = 1;
-    return InkWell(
-      child: ListView.builder(
-        addAutomaticKeepAlives: true,
-        shrinkWrap: true,
-        physics: NeverScrollableScrollPhysics(),
-        itemCount: _count,
-        itemBuilder: (context, i) {
-          String _stopsTime = _stops[i]["time"];
-          String _stopsName = _stops[i]["stop"];
-          return Text('$_stopsTime    $_stopsName');
-        },
-      ),
-      onTap: () {
-        setState(() {
-          log(_count.toString());
-          _count = 20;
-          log(_count.toString());
-        });
-      },
-    );
-  }
+
+  //TODO detailed view in tap
+  // _stopsDetail(_stops, departureTime, departureStop, arrivalTime, arrivalStop) {
+  //   int _count = 1;
+  //   return InkWell(
+  //     child: ListView.builder(
+  //       addAutomaticKeepAlives: true,
+  //       shrinkWrap: true,
+  //       physics: NeverScrollableScrollPhysics(),
+  //       itemCount: _count,
+  //       itemBuilder: (context, i) {
+  //         String _stopsTime = _stops[i]["time"];
+  //         String _stopsName = _stops[i]["stop"];
+  //         return Text('$_stopsTime    $_stopsName');
+  //       },
+  //     ),
+  //     onTap: () {
+  //       setState(() {
+  //         log(_count.toString());
+  //         _count = 20;
+  //         log(_count.toString());
+  //       });
+  //     },
+  //   );
+  // }
 
   _walkingDetails(details, last, index) {
     bool onlyOne = data[index]["legs"][0]["steps"].length == 1;
