@@ -35,9 +35,9 @@ class TripPlannerPage extends StatefulWidget {
 
 class TripPlannerState extends State<TripPlannerPage> {
   bool _isSearched = false;
-  List<Stop> stops = List<Stop>();
-  List<Trip> favoriteTrips = List<Trip>();
-  List<Trip> recentTrip = List<Trip>();
+  List<Stop> stops = [];
+  List<Trip> favoriteTrips = [];
+  List<Trip> recentTrip = [];
   File stopsFile;
   File favoritesFile;
   File favoriteTripsFile;
@@ -49,7 +49,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   String recentTripFileName = 'recentTrip.json';
   String _fromHint = "From...";
   String arrivalDepartureText = '&departure_time=';
-  String arrivalDepartureTime = DateTime.now().millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+  String arrivalDepartureTime = DateTime.now().millisecondsSinceEpoch.toString();
   bool arrivalDeparture = false;
   bool stopsExists = false;
   bool favoritesExists = false;
@@ -72,7 +72,7 @@ class TripPlannerState extends State<TripPlannerPage> {
   Geolocator geolocator = Geolocator();
   final flutterWebviewPlugin = new FlutterWebviewPlugin();
   final FocusNode _focusNode = FocusNode();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  // final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _fromTextController = new TextEditingController();
   final TextEditingController _toTextController = new TextEditingController();
   final ScrollController scrollController = ScrollController();
@@ -88,10 +88,10 @@ class TripPlannerState extends State<TripPlannerPage> {
     });
   }
 
-  _setPrefs(bool) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('imhd', bool);
-  }
+  // _setPrefs(bool) async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setBool('imhd', bool);
+  // }
 
   // fetch stops on init
   void initState() {
@@ -107,7 +107,7 @@ class TripPlannerState extends State<TripPlannerPage> {
       favoritesExists = favoritesFile.existsSync();
       favoriteTripsExists = favoriteTripsFile.existsSync();
       recentTripExists = recentTripFile.existsSync();
-      var _favorites = List<Stop>();
+      List<Stop> _favorites = [];
       if (favoritesExists) {
         print('favorites.json exists');
         var favoritesFileJson = json.decode((favoritesFile.readAsStringSync()));
@@ -118,7 +118,7 @@ class TripPlannerState extends State<TripPlannerPage> {
         print('favorites loaded');
       }
       if (favoriteTripsExists) {
-        var _favoriteTrips = List<Trip>();
+        List<Trip> _favoriteTrips = [];
         print('favoriteTrips.json exists');
         var favoriteTripsFileJson = json.decode(favoriteTripsFile.readAsStringSync());
         for (var favoriteTripFileJson in favoriteTripsFileJson) {
@@ -129,7 +129,7 @@ class TripPlannerState extends State<TripPlannerPage> {
         print('favoriteTrips loaded');
       }
       if (recentTripExists) {
-        var _recentTrip = List<Trip>();
+        List<Trip> _recentTrip = [];
         print('recentTrip.json exists');
         var recentTripFileJson = json.decode(recentTripFile.readAsStringSync());
         for (var recentTripFileJson in recentTripFileJson) {
@@ -140,7 +140,7 @@ class TripPlannerState extends State<TripPlannerPage> {
         print('recentTrip loaded');
       }
       if (stopsExists) {
-        var _stops = List<Stop>();
+        List<Stop> _stops = [];
         var stopsFileJson = json.decode((stopsFile.readAsStringSync()));
         for (var stopFileJson in stopsFileJson) {
           _stops.add(Stop.fromJson(stopFileJson));
@@ -255,7 +255,7 @@ class TripPlannerState extends State<TripPlannerPage> {
 
       String _from = _fromTextController.value.text.toString();
       String _to = _toTextController.value.text.toString();
-      String _time = _pickedTime ? arrivalDepartureTime : DateTime.now().millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+      String _time = _pickedTime ? arrivalDepartureTime + '000' : DateTime.now().millisecondsSinceEpoch.toString();
 
       if (currentLocation != null && _fromTextController.value.text == '') {
         _from = 'c' + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString();
@@ -266,7 +266,7 @@ class TripPlannerState extends State<TripPlannerPage> {
         });
         _from = 'c' + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString();
       }
-      var jsonUrl = 'https://api.magicsk.eu/trip?time=' + _time + '000' + '&from=' + _from + '&to=' + _to;
+      var jsonUrl = 'https://api.magicsk.eu/trip?time=' + _time + '&from=' + _from + '&to=' + _to;
       print(jsonUrl);
       var response = await http.get(Uri.encodeFull(jsonUrl), headers: {"Accept": "application/json"});
       await isUsed();
@@ -378,7 +378,7 @@ class TripPlannerState extends State<TripPlannerPage> {
       setState(() {
         date = picked;
         date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-        arrivalDepartureTime = date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+        arrivalDepartureTime = date.millisecondsSinceEpoch.toString();
       });
       getDirection();
     }
@@ -392,7 +392,7 @@ class TripPlannerState extends State<TripPlannerPage> {
       setState(() {
         time = picked;
         date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-        arrivalDepartureTime = date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+        arrivalDepartureTime = date.millisecondsSinceEpoch.toString();
         _pickedTime = true;
         getDirection();
       });
@@ -404,32 +404,32 @@ class TripPlannerState extends State<TripPlannerPage> {
       appBar: AppBar(
         centerTitle: true,
         title: Text(AppLocalizations.of(context).tripPlannerTitle),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.more_vert),
-            onPressed: () {
-              showMenu(
-                context: context,
-                position: RelativeRect.fromLTRB(20, 75, 0, 100),
-                items: <PopupMenuEntry>[
-                  PopupMenuItem(
-                    child: SwitchListTile(
-                      contentPadding: EdgeInsets.all(0),
-                      title: Text(AppLocalizations.of(context).altApi),
-                      value: imhd,
-                      onChanged: (bool) {
-                        setState(() {
-                          imhd = bool;
-                        });
-                        _setPrefs(bool);
-                      },
-                    ),
-                  )
-                ],
-              );
-            },
-          )
-        ],
+        // actions: <Widget>[
+        //   IconButton(
+        //     icon: Icon(Icons.more_vert),
+        //     onPressed: () {
+        //       showMenu(
+        //         context: context,
+        //         position: RelativeRect.fromLTRB(20, 75, 0, 100),
+        //         items: <PopupMenuEntry>[
+        //           PopupMenuItem(
+        //             child: SwitchListTile(
+        //               contentPadding: EdgeInsets.all(0),
+        //               title: Text(AppLocalizations.of(context).altApi),
+        //               value: imhd,
+        //               onChanged: (bool) {
+        //                 setState(() {
+        //                   imhd = bool;
+        //                 });
+        //                 _setPrefs(bool);
+        //               },
+        //             ),
+        //           )
+        //         ],
+        //       );
+        //     },
+        //   )
+        // ],
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(186.0),
           child: _inputBar(),
@@ -517,7 +517,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: <Widget>[
-                                    Text(imhd ? data[index]["duration"] : data[index]["legs"][0]["duration"]["text"] + " ",
+                                    Text(imhd ? (data[index]["duration"] ?? " ") : data[index]["legs"][0]["duration"]["text"] + " ",
                                         style: TextStyle(
                                           fontSize: 18.0,
                                         )),
@@ -607,7 +607,7 @@ class TripPlannerState extends State<TripPlannerPage> {
     int r = imhd ? int.parse(rgbColor[0]) : 0;
     int g = imhd ? int.parse(rgbColor[1]) : 0;
     int b = imhd ? int.parse(rgbColor[2]) : 0;
-    // var _stops = details["stops"];
+    // List<Stop> _stops = details["stops"];
     String lineNumber = imhd ? details["line"]["number"] : details["line"]["short_name"];
     String departureTime = imhd ? details["departure_time"] : details["departure_time"]["text"];
     String departureStop = imhd ? details["departure_stop"] : details["departure_stop"]["name"];
@@ -661,7 +661,6 @@ class TripPlannerState extends State<TripPlannerPage> {
       // ),
     );
   }
-
 
   //TODO detailed view in tap
   // _stopsDetail(_stops, departureTime, departureStop, arrivalTime, arrivalStop) {
@@ -746,7 +745,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                       style: TextStyle(fontSize: 20.0, color: Colors.white, decoration: TextDecoration.none),
                     ),
                     suggestionsCallback: (pattern) {
-                      List<String> matches = List();
+                      List<String> matches = [];
                       for (var i = 0; i < stops.length; i++) {
                         matches.add(stops[i].name);
                       }
@@ -812,7 +811,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                 },
               ),
               suggestionsCallback: (pattern) {
-                List<String> matches = List();
+                List<String> matches = [];
                 for (var i = 0; i < stops.length; i++) {
                   matches.add(stops[i].name);
                 }
@@ -839,9 +838,11 @@ class TripPlannerState extends State<TripPlannerPage> {
                     Flexible(
                       child: Column(
                         children: <Widget>[
-                          FlatButton(
-                            padding: EdgeInsets.all(0),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.all(0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             onPressed: () {
                               setState(() {
                                 arrivalDeparture = false;
@@ -852,21 +853,29 @@ class TripPlannerState extends State<TripPlannerPage> {
                             child: Row(
                               children: <Widget>[
                                 Radio(
-                                  onChanged: null,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      arrivalDeparture = false;
+                                      arrivalDepartureText = '&departure_time=';
+                                      getDirection();
+                                    });
+                                  },
                                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   value: false,
                                   groupValue: arrivalDeparture,
                                   activeColor: Colors.white,
-                                  inactiveColor: Colors.white,
+                                  fillColor: MaterialStateProperty.all(Colors.white),
                                 ),
                                 Padding(padding: EdgeInsets.only(right: 10.0)),
                                 Text(AppLocalizations.of(context).departure, style: TextStyle(color: Colors.white)),
                               ],
                             ),
                           ),
-                          FlatButton(
-                            padding: EdgeInsets.all(0),
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.all(0),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             onPressed: () {
                               setState(() {
                                 arrivalDeparture = true;
@@ -877,12 +886,18 @@ class TripPlannerState extends State<TripPlannerPage> {
                             child: Row(
                               children: <Widget>[
                                 Radio(
-                                  onChanged: null,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      arrivalDeparture = true;
+                                      arrivalDepartureText = '&arrival_time=';
+                                      getDirection();
+                                    });
+                                  },
                                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                                   value: true,
                                   groupValue: arrivalDeparture,
                                   activeColor: Colors.white,
-                                  inactiveColor: Colors.white,
+                                  fillColor: MaterialStateProperty.all(Colors.white),
                                 ),
                                 Padding(padding: EdgeInsets.only(right: 10.0)),
                                 Text(
@@ -895,29 +910,41 @@ class TripPlannerState extends State<TripPlannerPage> {
                         ],
                       ),
                     ),
-                    FlatButton(
-                      padding: EdgeInsets.only(left: 8.0, right: 8.0),
-                      child: Text(
-                        dateFormat.format(date),
-                        style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.normal),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.white),
+                        ),
                       ),
-                      onPressed: () => {_selectDate(context)},
-                      shape: Border(
-                        bottom: BorderSide(width: 1.5, color: Colors.white),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.only(left: 5.0, right: 5.0),
+                        ),
+                        child: Text(
+                          dateFormat.format(date),
+                          style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.normal),
+                        ),
+                        onPressed: () => {_selectDate(context)},
                       ),
                     ),
                     Padding(
                       padding: EdgeInsets.only(left: 15.0),
                     ),
-                    FlatButton(
-                      padding: EdgeInsets.only(left: 0.0, right: 0.0),
-                      child: Text(
-                        timeFormat.format(date),
-                        style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.normal),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: Colors.white),
+                        ),
                       ),
-                      onPressed: () => {_selectTime(context)},
-                      shape: Border(
-                        bottom: BorderSide(width: 1.5, color: Colors.white),
+                      child: TextButton(
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.only(left: 2.0, right: 2.0),
+                        ),
+                        child: Text(
+                          timeFormat.format(date),
+                          style: TextStyle(fontSize: 20.0, color: Colors.white, fontWeight: FontWeight.normal),
+                        ),
+                        onPressed: () => {_selectTime(context)},
                       ),
                     ),
                   ],
@@ -971,7 +998,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                 _toTextController.text = recentTrip[0].to;
                 time = TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(recentTrip[0].time.toString() + '000')));
                 date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                arrivalDepartureTime = date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+                arrivalDepartureTime = date.millisecondsSinceEpoch.toString();
                 setState(() {
                   _pickedTime = recentTrip[0].time != 0;
                 });
@@ -1063,7 +1090,7 @@ class TripPlannerState extends State<TripPlannerPage> {
                       _toTextController.text = favoriteTrips[index].to;
                       time = TimeOfDay.fromDateTime(DateTime.fromMillisecondsSinceEpoch(int.parse(favoriteTrips[index].time.toString() + '000')));
                       date = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-                      arrivalDepartureTime = date.millisecondsSinceEpoch.toString().replaceAll(RegExp(r'\d(\d{0,2}$)'), '');
+                      arrivalDepartureTime = date.millisecondsSinceEpoch.toString();
                       setState(() {
                         _pickedTime = favoriteTrips[index].time != 0;
                       });

@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'stopList.dart';
 
-class   StopWebView extends StatefulWidget {
+class StopWebView extends StatefulWidget {
   final Stop stop;
   StopWebView(this.stop);
   @override
@@ -20,7 +20,11 @@ class StopWebViewState extends State<StopWebView> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       tableTheme = prefs.getString('tableTheme');
-      url = stop.url + tableTheme.toString();
+      url = tableTheme == 'auto'
+          ? Theme.of(context).brightness == Brightness.dark
+              ? (stop.url + "black")
+              : (stop.url + "white")
+          : stop.url + tableTheme.toString();
       print(url);
       _isLoading = false;
     });
@@ -31,7 +35,7 @@ class StopWebViewState extends State<StopWebView> {
     _getPrefs();
     super.initState();
   }
-  
+
   final Stop stop;
   StopWebViewState(this.stop);
   Widget build(BuildContext context) {
@@ -43,7 +47,7 @@ class StopWebViewState extends State<StopWebView> {
       body: _isLoading
           ? CircularProgressIndicator()
           : WebView(
-              initialUrl: tableTheme == 'auto' ? Theme.of(context).brightness == Brightness.dark ? (stop.url + "black") : (stop.url + "white"): url,
+              initialUrl: stop.url.contains('aplikacie.zsr.sk/InfoTabule') ? stop.url : url,
               javascriptMode: JavascriptMode.unrestricted,
             ),
     );

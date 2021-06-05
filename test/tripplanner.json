@@ -1,0 +1,82 @@
+{
+    "routes": [{
+        "arrival_departure_time": "00:39 – 01:16",
+        "duration": "37 min",
+        "zones": "01:33 – 01:35",
+        "steps": [{
+            "type": "WALKING",
+            "text": "37 min presun do cieľa"
+        }]
+    }, {
+        "arrival_departure_time": "2 min",
+        "duration": "100",
+        "zones": "01:35 – 01:51",
+        "steps": [{
+            "type": "TRANSIT",
+            "duration": "2 min",
+            "departure_time": "01:33",
+            "arrival_time": "01:35",
+            "departure_stop": "Hodžovo nám.",
+            "arrival_stop": "Americké nám.",
+            "headsign": "VAJNORY",
+            "line": {
+                "number": "N53",
+                "color": "rgb(43, 42, 41)",
+                "vehicle": {
+                    "type": "nightline",
+                    "icon": "//maps.gstatic.com/mapfiles/transit/iw2/6/bus2.png"
+                }
+            },
+            "num_stops": "2",
+            "stops": [{
+                "time": "01:33",
+                "stop": "Hodžovo nám."
+            }, {
+                "time": "01:34",
+                "stop": "Kollárovo nám."
+            }, {
+                "time": "01:35",
+                "stop": "Americké nám."
+            }]
+        }]
+    }, {
+        "arrival_departure_time": "16 min",
+        "duration": "100",
+        "zones": "01:35 – 02:12",
+        "steps": [{
+            "type": "TRANSIT",
+            "duration": "1 min",
+            "departure_time": "01:35",
+            "arrival_time": "01:36",
+            "departure_stop": "Hodžovo nám.",
+            "arrival_stop": "Kollárovo nám.",
+            "headsign": "DOLNÉ HONY",
+            "line": {
+                "number": "N72",
+                "color": "rgb(43, 42, 41)",
+                "vehicle": {
+                    "type": "nightline",
+                    "icon": "//maps.gstatic.com/mapfiles/transit/iw2/6/bus2.png"
+                }
+            },
+            "num_stops": "1",
+            "stops": [{
+                "time": "01:35",
+                "stop": "Hodžovo nám."
+            }, {
+                "time": "01:36",
+                "stop": "Kollárovo nám."
+            }]
+        }, {
+            "type": "WALKING",
+            "text": "15 min presun do cieľa"
+        }]
+    }, {
+        "arrival_departure_time": "37 min",
+        "steps": [{
+            "type": "WALKING",
+            "text": "37 min presun do cieľa"
+        }]
+    }],
+    "status": "OK"
+}

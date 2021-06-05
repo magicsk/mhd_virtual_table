@@ -105,8 +105,8 @@ class MyAppPage extends StatefulWidget {
 }
 
 class MyAppState extends State<MyAppPage> {
-  List<Stop> stops = List<Stop>();
-  List<Stop> nearStops = List<Stop>();
+  List<Stop> stops = [];
+  List<Stop> nearStops = [];
   Geolocator geolocator = Geolocator();
   Position userLocation;
   String stopsFileName = 'stops.json';
@@ -169,7 +169,7 @@ class MyAppState extends State<MyAppPage> {
   //   var url = 'https://api.magicsk.eu/stops';
   //   var response = await http.get(url);
 
-  //   var _stops = List<Stop>();
+  //   List<Stop> _stops = [];
   //   print("Fetching: " + url);
   //   if (response.statusCode == 200) {
   //     var stopsJson = json.decode(utf8.decode(response.bodyBytes));
@@ -190,7 +190,7 @@ class MyAppState extends State<MyAppPage> {
     var url = 'https://api.magicsk.eu/nearme?lat=' + currentLocation.latitude.toString() + '&long=' + currentLocation.longitude.toString();
     var response = await http.get(url);
 
-    var _nearStops = List<Stop>();
+    List<Stop> _nearStops = [];
     print("Fetching: " + url);
     if (response.statusCode == 200) {
       var nearStopsJson = json.decode(utf8.decode(response.bodyBytes));
@@ -302,7 +302,7 @@ class MyAppState extends State<MyAppPage> {
                 ],
               ),
               actions: <Widget>[
-                FlatButton(
+                TextButton(
                   onPressed: () {
                     legalAgreed = true;
                     SharedPreferences.getInstance().then((prefs) => prefs.setBool("legalAgreed", true));
@@ -310,7 +310,7 @@ class MyAppState extends State<MyAppPage> {
                   },
                   child: Text(AppLocalizations.of(context).accept),
                 ),
-                FlatButton(
+                TextButton(
                   onPressed: () {
                     exit(0);
                   },
@@ -408,7 +408,7 @@ class MyAppState extends State<MyAppPage> {
   Widget build(BuildContext context) {
     final _theme = Provider.of<ThemeModel>(context);
     _theme.checkPlatformBrightness(context);
-    Locale myLocale = Localizations.localeOf(context);
+    // Locale myLocale = Localizations.localeOf(context);
     return ListenableProvider<ThemeModel>.value(
       value: _model..init(),
       child: Consumer<ThemeModel>(builder: (context, model, child) {

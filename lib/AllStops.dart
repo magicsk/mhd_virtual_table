@@ -19,11 +19,11 @@ class AllStopsPage extends StatefulWidget {
 }
 
 class _AllStopsState extends State<AllStopsPage> {
-  List<Stop> stops = List<Stop>();
-  List<Stop> saved = List<Stop>();
-  List<Stop> favorites = List<Stop>();
-  List<Stop> _stopsForDisplay = List<Stop>();
-  List<Stop> _favoritesForDisplay = List<Stop>();
+  List<Stop> stops = [];
+  List<Stop> saved = [];
+  List<Stop> favorites = [];
+  List<Stop> _stopsForDisplay = [];
+  List<Stop> _favoritesForDisplay = [];
   File stopsFile;
   File savedFile;
   File favoritesFile;
@@ -44,7 +44,7 @@ class _AllStopsState extends State<AllStopsPage> {
     var url = 'https://api.magicsk.eu/stops';
     var response = await http.get(url);
 
-    var _stops = List<Stop>();
+    List<Stop> _stops = [];
     print("Fetching: " + url);
     if (response.statusCode == 200) {
       var stopsJson = json.decode(utf8.decode(response.bodyBytes));
@@ -82,7 +82,7 @@ class _AllStopsState extends State<AllStopsPage> {
         favoritesExists = favoritesFile.existsSync();
         if (favoritesExists) {
           print('favorites.json exists');
-          var _favorites = List<Stop>();
+          List<Stop> _favorites = [];
           var favoritesFileJson = json.decode((favoritesFile.readAsStringSync()));
           for (var favoritesFileJson in favoritesFileJson) {
             _favorites.add(Stop.fromJson(favoritesFileJson));
@@ -108,7 +108,7 @@ class _AllStopsState extends State<AllStopsPage> {
         stopsExists = stopsFile.existsSync();
         if (stopsExists) {
           print('stops.json exists');
-          var _stops = List<Stop>();
+          List<Stop> _stops = [];
           var stopsFileJson = json.decode((stopsFile.readAsStringSync()));
           for (var stopFileJson in stopsFileJson) {
             _stops.add(Stop.fromJson(stopFileJson));
@@ -206,14 +206,14 @@ class _AllStopsState extends State<AllStopsPage> {
           child: _isLoading
               ? CircularProgressIndicator()
               : DraggableScrollbar.semicircle(
-                  backgroundColor: Theme.of(context).backgroundColor,
+                  backgroundColor: Theme.of(context).canvasColor,
                   controller: scrollController,
                   child: ListView.builder(
                     controller: scrollController,
                     scrollDirection: Axis.vertical,
                     itemCount: _favoritesForDisplay.length + _stopsForDisplay.length,
                     itemBuilder: (context, index) {
-                      return index < _favoritesForDisplay.length ? _listFavoritesItem(index) : _listItem(index);
+                      return  _listItem(index, index < _favoritesForDisplay.length);
                     },
                   ))),
     );
@@ -271,115 +271,79 @@ class _AllStopsState extends State<AllStopsPage> {
     );
   }
 
-  _listItem(index) {
-    index = index - _favoritesForDisplay.length;
-    return FlatButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_stopsForDisplay[index])));
-        },
-        child: Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 16.0, top: 4.0, bottom: 4.0),
-              child: Flex(
-                direction: Axis.horizontal,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Expanded(
-                    child: Text(
-                      _stopsForDisplay[index].name,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.star_border),
-                    onPressed: () {
-                      setState(() {
-                        favorites.add(_stopsForDisplay[index]);
-                        stops.remove(_stopsForDisplay[index]);
-                        favorites.sort((a, b) {
-                          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-                        });
-                        var text = _textController.text;
-                        _stopsForDisplay = stops.where((stop) {
-                          var stopName = removeDiacritics(stop.name).toLowerCase();
-                          return stopName.contains(text);
-                        }).toList();
-                        _favoritesForDisplay = favorites.where((stop) {
-                          var stopName = removeDiacritics(stop.name).toLowerCase();
-                          return stopName.contains(text);
-                        }).toList();
-                        createFile();
-                      });
-                    },
-                  ),
-                ],
+  _listItem(index, bool favorite) {
+    int defaultIndex = index - _favoritesForDisplay.length;
+    return Column(
+      children: [
+        TextButton(
+          onPressed: () {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView( favorite ? _favoritesForDisplay[index] : _stopsForDisplay[defaultIndex])));
+          },
+          child: Flex(
+            direction: Axis.horizontal,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Padding(padding: EdgeInsets.only(left: 16.0)),
+              Expanded(
+                child: Text(
+                  favorite ? _favoritesForDisplay[index].name :_stopsForDisplay[defaultIndex].name,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal, color: Theme.of(context).textTheme.bodyText1.color),
+                ),
               ),
-            ),
-            Divider(
-              height: 2.0,
-              color: Colors.grey,
-            )
-          ],
-        ));
-  }
-
-  _listFavoritesItem(index) {
-    return FlatButton(
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => StopWebView(_favoritesForDisplay[index])));
-        },
-        child: Column(
-          children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16.0),
-                      child: Text(
-                        _favoritesForDisplay[index].name,
-                        style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0, bottom: 4.0, left: 0.0, right: 0.0),
-                  child: IconButton(
-                    icon: Icon(Icons.star),
-                    color: Colors.yellow[800],
-                    onPressed: () {
-                      setState(() {
-                        stops.add(_favoritesForDisplay[index]);
-                        favorites.remove(_favoritesForDisplay[index]);
-                        stops.sort((a, b) {
-                          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-                        });
-                        var text = _textController.text;
-                        _stopsForDisplay = stops.where((stop) {
-                          var stopName = removeDiacritics(stop.name).toLowerCase();
-                          return stopName.contains(text);
-                        }).toList();
-                        _favoritesForDisplay = favorites.where((stop) {
-                          var stopName = removeDiacritics(stop.name).toLowerCase();
-                          return stopName.contains(text);
-                        }).toList();
-                        createFile();
+              IconButton(
+                icon: favorite ? Icon(Icons.star) :Icon(Icons.star_border),
+                color: favorite ? Colors.yellow : Theme.of(context).textTheme.bodyText1.color,
+                onPressed: () {
+                  if (favorite) {
+                    setState(() {
+                      stops.add(_favoritesForDisplay[index]);
+                      favorites.remove(_favoritesForDisplay[index]);
+                      stops.sort((a, b) {
+                        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
                       });
-                    },
-                  ),
-                ),
-              ],
-            ),
-            Divider(
-              height: 2.0,
-              color: Colors.grey,
-            )
-          ],
-        ));
+                      var text = _textController.text;
+                      _stopsForDisplay = stops.where((stop) {
+                        var stopName = removeDiacritics(stop.name).toLowerCase();
+                        return stopName.contains(text);
+                      }).toList();
+                      _favoritesForDisplay = favorites.where((stop) {
+                        var stopName = removeDiacritics(stop.name).toLowerCase();
+                        return stopName.contains(text);
+                      }).toList();
+                      createFile();
+                    });
+                  } else {
+                    setState(() {
+                      print(defaultIndex);
+                      favorites.add(_stopsForDisplay[defaultIndex]);
+                      print(defaultIndex);
+                      stops.remove(_stopsForDisplay[defaultIndex]);
+                      favorites.sort((a, b) {
+                        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+                      });
+                      var text = _textController.text;
+                      _stopsForDisplay = stops.where((stop) {
+                        var stopName = removeDiacritics(stop.name).toLowerCase();
+                        return stopName.contains(text);
+                      }).toList();
+                      _favoritesForDisplay = favorites.where((stop) {
+                        var stopName = removeDiacritics(stop.name).toLowerCase();
+                        return stopName.contains(text);
+                      }).toList();
+                      createFile();
+                    });
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+        Divider(
+          height: 2.0,
+          color: Colors.grey,
+        ),
+      ],
+    );
   }
 }

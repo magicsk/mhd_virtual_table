@@ -71,7 +71,7 @@ class _ActualPageState extends State<ActualPage> {
                   AppLocalizations.of(context).noConnectionNearMe,
                   style: TextStyle(color: Colors.grey[500]),
                 ),
-                RaisedButton(
+                ElevatedButton(
                     child: Text(AppLocalizations.of(context).retryBtn),
                     onPressed: () {
                       _checkNetworkStatus();

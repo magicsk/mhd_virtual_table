@@ -19,7 +19,7 @@ class NearMePage extends StatefulWidget {
 }
 
 class _NearMeState extends State<NearMePage> {
-  List<Stop> nearStops = List<Stop>();
+  List<Stop> nearStops = [];
   Geolocator geolocator = Geolocator();
   Position userLocation;
   File nearStopsFile;
@@ -66,13 +66,10 @@ class _NearMeState extends State<NearMePage> {
     } catch (e) {
       currentLocation = null;
     }
-    var url = 'https://api.magicsk.eu/nearme?lat=' +
-        currentLocation.latitude.toString() +
-        '&long=' +
-        currentLocation.longitude.toString();
+    var url = 'https://api.magicsk.eu/nearme?lat=' + currentLocation.latitude.toString() + '&long=' + currentLocation.longitude.toString();
     var response = await http.get(url);
 
-    var _nearStops = List<Stop>();
+    List<Stop> _nearStops = [];
     print("Fetching: " + url);
     if (response.statusCode == 200) {
       var nearStopsJson = json.decode(utf8.decode(response.bodyBytes));
@@ -92,7 +89,7 @@ class _NearMeState extends State<NearMePage> {
           nearStopsExists = nearStopsFile.existsSync();
           if (nearStopsExists) {
             print('nearStops.json exists');
-            var _nearStopsFile = List<Stop>();
+            List<Stop> _nearStopsFile = [];
             var nearStopsFileJson = json.decode((nearStopsFile.readAsStringSync()));
             for (var nearStopFileJson in nearStopsFileJson) {
               _nearStopsFile.add(Stop.fromJson(nearStopFileJson));
@@ -208,7 +205,7 @@ class _NearMeState extends State<NearMePage> {
                                     currentLocation.longitude.toString();
                                 var response = await http.get(url);
 
-                                var _nearStops = List<Stop>();
+                                List<Stop> _nearStops = [];
                                 print("Fetching: " + url);
                                 if (response.statusCode == 200) {
                                   var nearStopsJson = json.decode(utf8.decode(response.bodyBytes));
@@ -255,11 +252,19 @@ class _NearMeState extends State<NearMePage> {
                                     scrollDirection: Axis.vertical,
                                     itemCount: nearStops.length,
                                     itemBuilder: (context, index) {
-                                      return new FlatButton(
-                                        child: NearStopRow(nearStops[index]),
-                                        onPressed: () {
-                                          Navigator.push(context, new MaterialPageRoute(builder: (context) => new StopWebView(nearStops[index])));
-                                        },
+                                      return new Column(
+                                        children: [
+                                          TextButton(
+                                            child: NearStopRow(nearStops[index]),
+                                            onPressed: () {
+                                              Navigator.push(context, new MaterialPageRoute(builder: (context) => new StopWebView(nearStops[index])));
+                                            },
+                                          ),
+                                          Divider(
+                                            height: 2.0,
+                                            color: Colors.grey,
+                                          )
+                                        ],
                                       );
                                     },
                                   ),
@@ -315,7 +320,7 @@ class _NearMeState extends State<NearMePage> {
                       AppLocalizations.of(context).noConnectionNearMe,
                       style: TextStyle(color: Colors.grey[500]),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       child: Text(AppLocalizations.of(context).retryBtn),
                       onPressed: () async {
                         await (Connectivity().checkConnectivity()).then((status) {
@@ -333,7 +338,7 @@ class _NearMeState extends State<NearMePage> {
                               nearStopsExists = nearStopsFile.existsSync();
                               if (nearStopsExists) {
                                 print('nearStops.json exists');
-                                var _nearStopsFile = List<Stop>();
+                                List<Stop> _nearStopsFile = [];
                                 var nearStopsFileJson = json.decode((nearStopsFile.readAsStringSync()));
                                 for (var nearStopFileJson in nearStopsFileJson) {
                                   _nearStopsFile.add(Stop.fromJson(nearStopFileJson));
@@ -362,27 +367,18 @@ class NearStopRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Flex(
+          direction: Axis.horizontal,
           children: <Widget>[
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0, bottom: 16.0, left: 16.0),
-                  child: Text(
-                    stop.name,
-                    style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal),
-                  ),
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.only(left: 16.0, top: 13.5, bottom: 13.5),
+              child: Text(
+                stop.name,
+                style: TextStyle(fontSize: 17.5, fontWeight: FontWeight.normal, color: Theme.of(context).textTheme.bodyText1.color),
+              ),
             ),
           ],
         ),
-        Divider(
-          height: 2.0,
-          color: Colors.grey,
-        )
       ],
     );
   }

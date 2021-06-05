@@ -74,8 +74,8 @@ class _SettingsState extends State<Settings> {
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
-              RaisedButton(child: Text(AppLocalizations.of(context).loadSettings), onPressed: null),
-              RaisedButton( child: Text(AppLocalizations.of(context).saveSettings), onPressed: null),
+              ElevatedButton(child: Text(AppLocalizations.of(context).loadSettings), onPressed: null),
+              ElevatedButton( child: Text(AppLocalizations.of(context).saveSettings), onPressed: null),
             ],
           )
         ],
